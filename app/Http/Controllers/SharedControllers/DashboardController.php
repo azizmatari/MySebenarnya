@@ -12,7 +12,7 @@ class DashboardController extends Controller
     }
 
     public function userDashboard() {
-        return view('Dashboard.UserDashboard');
+        return view('Dashboard.UserDash');
     }
 
     public function agencyDashboard() {

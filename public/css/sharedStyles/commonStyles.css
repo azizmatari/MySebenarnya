@@ -244,6 +244,37 @@ input[type="password"] {
 .btn-view-more:hover {
   background-color: #003db3;
 }
+.sidebar {
+  width: 220px;
+  padding: 20px;
+  background-color: #e0e7ff;
+  min-height: 100vh;
+}
+
+.sidebar-nav a {
+  display: block;
+  width: 100%;
+  padding: 12px 15px;
+  background-color: #005eff;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: bold;
+  text-align: center;
+  transition: background-color 0.3s ease;
+  margin-bottom: 10px;
+}
+
+.sidebar-nav a:hover {
+  background-color: #003db3;
+}
+
+.sidebar-nav a.disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 
 
 

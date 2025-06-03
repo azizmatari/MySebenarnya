@@ -22,12 +22,14 @@ Route::get('/user/profile', [UserProfileController::class, 'view'])->name('user.
 // ==================
 Route::post('/logout', [UserAuthController::class, 'logout'])->name('logout');
 
-
 // ==================
 // Default Welcome Page
 // ==================
 Route::get('/', function () {
-    return view('welcome');
+    if (session()->has('user_id')) {
+        return redirect()->route('user.dashboard');
+    }
+    return redirect()->route('login');
 });
 
 // ==================
@@ -47,7 +49,7 @@ Route::post('/register', [UserAuthController::class, 'registerPublic'])->name('r
 
 // ==================
 // Forgot Password View
-// ==================
+// =================
 Route::get('/forgot-password', function () {
     return view('module1.ForgotPasswordView');
 })->name('forgot.password');

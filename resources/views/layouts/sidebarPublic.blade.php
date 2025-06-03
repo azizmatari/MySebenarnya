@@ -1,19 +1,11 @@
-@extends('layouts.layoutWrapper')
-
-@section('title', 'Dashboard')
-
-@section('content')
-    <h1>Welcome to the User Dashboard</h1>
-    <p>This is where the latest news and updates will appear.</p>
-
-    <div class="event-grid">
-        @for ($i = 1; $i <= 6; $i++)
-            <div class="event-card">
-                <img src="{{ asset('images/event-placeholder.png') }}" alt="Event Image">
-                <h3>Event Title {{ $i }}</h3>
-            </div>
-        @endfor
-    </div>
-
-    <a href="#" class="btn-view-more">View More Events</a>
-@endsection
+<div class="sidebar">
+    <nav class="sidebar-nav">
+        <a href="{{ route('user.dashboard') }}">Dashboard</a>
+        <a href="#" class="disabled" onclick="return false;">Submit Inquiry (Coming Soon)</a>
+        <a href="#" class="disabled" onclick="return false;">My Inquiries (Coming Soon)</a>
+        <form action="{{ route('logout') }}" method="POST" style="margin-top: 10px;">
+            @csrf
+            <button type="submit" class="btn btn-danger" style="width: 100%;">Logout</button>
+        </form>
+    </nav>
+</div>
