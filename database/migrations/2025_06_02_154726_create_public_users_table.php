@@ -8,19 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('public_users', function (Blueprint $table) {
-            $table->id('userId'); // match ERD field name
-            $table->string('userName');
-            $table->string('userEmail')->unique(); // fix typo, make it unique
-            $table->string('userUsername')->unique();
-            $table->string('userPassword');
-            $table->string('userContact_number')->nullable(); // optional during register
+        Schema::create('publicuser', function (Blueprint $table) {
+            $table->id('userId');
+            $table->string('userName', 50);
+            $table->string('userEmail', 50);
+            $table->string('userUsername', 20);
+            $table->string('userPassword', 15);
+            $table->string('userContact_number', 20)->nullable();
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('public_users');
+        Schema::dropIfExists('publicuser');
     }
 };

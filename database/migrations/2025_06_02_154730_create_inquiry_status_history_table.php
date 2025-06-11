@@ -6,22 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('inquiry_status_history', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::create('inquirystatushistory', function (Blueprint $table) {
+            $table->id('status_id');
+            $table->foreignId('inquiryId')->constrained('inquiry', 'inquiryId')->onDelete('cascade');
+            $table->foreignId('agencyId')->constrained('agency', 'agencyId')->onDelete('cascade');
+            $table->enum('status', ['Under Investigation', 'True', 'Fake', 'Rejected']);
+            $table->text('status_comment')->nullable();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('inquiry_status_history');
+        Schema::dropIfExists('inquirystatushistory');
     }
 };

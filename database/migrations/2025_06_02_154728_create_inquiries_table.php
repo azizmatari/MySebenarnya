@@ -6,22 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('inquiries', function (Blueprint $table) {
-            $table->id();
+        Schema::create('inquiry', function (Blueprint $table) {
+            $table->id('inquiryId');
+            $table->foreignId('userId')->constrained('publicuser', 'userId')->onDelete('cascade');
+            $table->foreignId('agencyId')->constrained('agency', 'agencyId')->onDelete('cascade');
+            $table->string('title', 30);
+            $table->text('description');
+            $table->enum('final_status', ['Under Investigation', 'True', 'Fake', 'Rejected']);
+            $table->date('submission_date');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('inquiries');
+        Schema::dropIfExists('inquiry');
     }
 };

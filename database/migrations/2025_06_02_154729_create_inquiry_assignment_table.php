@@ -6,22 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('inquiry_assignment', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::create('inquiryassignment', function (Blueprint $table) {
+            $table->id('assignmentId');
+            $table->foreignId('inquiryId')->constrained('inquiry', 'inquiryId')->onDelete('cascade');
+            $table->foreignId('agencyId')->constrained('agency', 'agencyId')->onDelete('cascade');
+            $table->foreignId('staffId')->constrained('agencystaff', 'agencyStaffId')->onDelete('cascade');
+            $table->text('comments')->nullable();
+            $table->boolean('isRejected');
+            $table->text('rejectedReason')->nullable();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('inquiry_assignment');
+        Schema::dropIfExists('inquiryassignment');
     }
 };
