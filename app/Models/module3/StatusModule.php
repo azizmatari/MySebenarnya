@@ -21,16 +21,14 @@ class StatusModule extends Model
                     i.description,
                     COALESCE(i.final_status, 'Pending') as final_status,
                     i.submission_date,
-                    COALESCE(a.agency_name, 'Unknown Agency') as agency_name,
+                    '--' as agency_name,
                     COALESCE(pu.userName, 'Unknown User') as applicant_name,
-                    COALESCE(e.evidenceUrl, NULL) as evidence_url
+                    COALESCE(i.evidenceUrl, NULL) as evidence_url
                 FROM inquiry i
-                LEFT JOIN agency a ON i.agencyId = a.agencyId
                 LEFT JOIN publicuser pu ON i.userId = pu.userId
-                LEFT JOIN evidence e ON i.inquiryId = e.inquiryId
                 WHERE (i.final_status IN ('Under Investigation', 'Pending') OR i.final_status IS NULL)
                 ORDER BY i.submission_date DESC
-            ");            // Log the count for debugging
+            "); // Log the count for debugging
             Log::info('Active inquiries found: ' . count($inquiries));
 
             return $inquiries;

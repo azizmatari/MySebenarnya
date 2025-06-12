@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('inquiry', function (Blueprint $table) {
             $table->id('inquiryId');
-            $table->foreignId('userId')->constrained('publicuser', 'userId')->onDelete('cascade');
+            $table->unsignedBigInteger('userId');
             $table->string('title', 30);
             $table->text('description');
             $table->enum('final_status', ['Under Investigation', 'True', 'Fake', 'Rejected'])->nullable();
@@ -18,6 +18,12 @@ return new class extends Migration
             $table->string('evidenceUrl', 150)->nullable();
             $table->string('evidenceFileUrl', 150)->nullable();
             $table->timestamps();
+            $table->string('evidenceUrl', 150)->nullable();
+            $table->string('evidenceFileUrl', 150)->nullable();
+            $table->unsignedBigInteger('agencyId')->nullable();
+
+            // Add indexes for better performance
+            $table->index('userId', 'idx_inquiry_user');
         });
     }
 

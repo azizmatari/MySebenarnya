@@ -198,9 +198,10 @@
     <!-- Include Sidebar -->
     @include('layouts.sidebarPublic')
     <!-- Add New Inquiry Button -->
-    <button class="btn add-inquiry-btn" onclick="addNewInquiry()">
-        <i class="fas fa-plus me-2"></i>Add New Inquiry
-    </button>
+    <a href="{{ route('inquiry.create') }}" class="btn btn-primary">
+    <i class="material-icons" style="vertical-align: middle; margin-right: 8px;">add_circle</i>
+    Submit New Inquiry
+    </a>
 
     <!-- Main Content -->
     <div class="main-content">

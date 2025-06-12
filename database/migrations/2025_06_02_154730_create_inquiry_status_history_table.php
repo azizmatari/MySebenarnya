@@ -10,10 +10,14 @@ return new class extends Migration
     {
         Schema::create('inquirystatushistory', function (Blueprint $table) {
             $table->id('status_id');
-            $table->foreignId('inquiryId')->constrained('inquiry', 'inquiryId')->onDelete('cascade');
-            $table->foreignId('agencyId')->constrained('agency', 'agencyId')->onDelete('cascade');
+            $table->unsignedBigInteger('inquiryId');
+            $table->unsignedBigInteger('agencyId');
             $table->enum('status', ['Under Investigation', 'True', 'Fake', 'Rejected']);
             $table->text('status_comment')->nullable();
+
+            // Add foreign key constraints
+            $table->foreign('inquiryId')->references('inquiryId')->on('inquiry');
+            $table->foreign('agencyId')->references('agencyId')->on('agency');
         });
     }
 

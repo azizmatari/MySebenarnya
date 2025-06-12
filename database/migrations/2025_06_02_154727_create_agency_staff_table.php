@@ -10,10 +10,14 @@ return new class extends Migration
     {
         Schema::create('agencystaff', function (Blueprint $table) {
             $table->id('agencyStaffId');
-            $table->foreignId('agencyId')->constrained('agency', 'agencyId')->onDelete('cascade');
+            $table->unsignedBigInteger('agencyId');
             $table->string('agencyStaffName', 50);
             $table->string('agencyStaffEmail', 50);
             $table->timestamps();
+
+            // Add index and foreign key
+            $table->index('agencyId', 'idx_agencystaff_agency');
+            $table->foreign('agencyId')->references('agencyId')->on('agency');
         });
     }
 
