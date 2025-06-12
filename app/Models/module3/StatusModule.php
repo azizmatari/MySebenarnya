@@ -4,6 +4,7 @@ namespace App\Models\module3;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class StatusModule extends Model
 {
@@ -18,7 +19,7 @@ class StatusModule extends Model
                     i.inquiryId,
                     i.title,
                     i.description,
-                    i.final_status,
+                    COALESCE(i.final_status, 'Pending') as final_status,
                     i.submission_date,
                     COALESCE(a.agency_name, 'Unknown Agency') as agency_name,
                     COALESCE(pu.userName, 'Unknown User') as applicant_name,
@@ -27,44 +28,50 @@ class StatusModule extends Model
                 LEFT JOIN agency a ON i.agencyId = a.agencyId
                 LEFT JOIN publicuser pu ON i.userId = pu.userId
                 LEFT JOIN evidence e ON i.inquiryId = e.inquiryId
-                WHERE i.final_status IN ('Under Investigation', 'Pending')
+                WHERE (i.final_status IN ('Under Investigation', 'Pending') OR i.final_status IS NULL)
                 ORDER BY i.submission_date DESC
-            ");
-
-            // Log the count for debugging
-            \Log::info('Active inquiries found: ' . count($inquiries));
+            ");            // Log the count for debugging
+            Log::info('Active inquiries found: ' . count($inquiries));
 
             return $inquiries;
-        } catch (\Exception $e) {
-            // Log error and return empty array
-            \Log::error('Error fetching active inquiries: ' . $e->getMessage());
+        } catch (\Exception $e) {            // Log error and return empty array
+            Log::error('Error fetching active inquiries: ' . $e->getMessage());
             return [];
         }
     }
     /**
      * Get inquiry count by status
-     */
-    public static function getInquiryCountByStatus($status = null)
+     */    public static function getInquiryCountByStatus($status = null)
     {
         try {
             if ($status) {
-                $count = DB::select("
-                    SELECT COUNT(*) as count 
-                    FROM inquiry 
-                    WHERE final_status = ?
-                ", [$status]);
+                if ($status === 'Pending') {
+                    // Count both explicit 'Pending' and NULL status
+                    $count = DB::select("
+                        SELECT COUNT(*) as count 
+                        FROM inquiry 
+                        WHERE final_status = 'Pending' OR final_status IS NULL
+                    ");
+                } else {
+                    // Count specific status
+                    $count = DB::select("
+                        SELECT COUNT(*) as count 
+                        FROM inquiry 
+                        WHERE final_status = ?
+                    ", [$status]);
+                }
             } else {
-                // Count both Under Investigation and Pending
+                // Count both Under Investigation, Pending, and NULL
                 $count = DB::select("
                     SELECT COUNT(*) as count 
                     FROM inquiry 
-                    WHERE final_status IN ('Under Investigation', 'Pending')
+                    WHERE (final_status IN ('Under Investigation', 'Pending') OR final_status IS NULL)
                 ");
             }
 
             return $count[0]->count ?? 0;
         } catch (\Exception $e) {
-            \Log::error('Error counting inquiries: ' . $e->getMessage());
+            Log::error('Error counting inquiries: ' . $e->getMessage());
             return 0;
         }
     }
@@ -99,7 +106,7 @@ class StatusModule extends Model
                 'this_week' => $thisWeekCount[0]->count ?? 0
             ];
         } catch (\Exception $e) {
-            \Log::error('Error fetching inquiry statistics: ' . $e->getMessage());
+            Log::error('Error fetching inquiry statistics: ' . $e->getMessage());
             return [
                 'active_inquiries' => 0,
                 'agencies_involved' => 0,
@@ -133,7 +140,7 @@ class StatusModule extends Model
 
             return $inquiry[0] ?? null;
         } catch (\Exception $e) {
-            \Log::error('Error fetching inquiry details: ' . $e->getMessage());
+            Log::error('Error fetching inquiry details: ' . $e->getMessage());
             return null;
         }
     }
@@ -159,7 +166,7 @@ class StatusModule extends Model
 
             return $inquiries;
         } catch (\Exception $e) {
-            \Log::error('Error fetching inquiries by agency: ' . $e->getMessage());
+            Log::error('Error fetching inquiries by agency: ' . $e->getMessage());
             return [];
         }
     }
@@ -177,7 +184,7 @@ class StatusModule extends Model
 
             return ($count[0]->count ?? 0) > 0;
         } catch (\Exception $e) {
-            \Log::error('Error checking inquiry status: ' . $e->getMessage());
+            Log::error('Error checking inquiry status: ' . $e->getMessage());
             return false;
         }
     }

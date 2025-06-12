@@ -10,9 +10,10 @@
 
     body {
         margin: 0;
-        padding: 0;
+        display: flex;
+        height: 100vh;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f8f9fa;
+        overflow: hidden;
     }
 
     /* Sidebar styles - matching MyPetakom design */

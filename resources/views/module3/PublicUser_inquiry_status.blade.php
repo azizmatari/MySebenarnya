@@ -6,66 +6,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Active Inquiries - Status Tracking</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">    <style>
-        html, body {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
             margin: 0;
             padding: 0;
-            height: auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow-x: hidden;
             overflow-y: auto;
         }
 
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
         .main-content {
             margin-left: 260px;
-            margin-top: 0;
+            margin-top: 50px;
             padding: 20px;
             min-height: 100vh;
         }
 
         .inquiry-card {
             background: white;
-            border: 1px solid #e9ecef;
-            border-left: 4px solid #4f46e5;
+            border: 1px solid #e1e5e9;
+            border-left: 4px solid #6366f1;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 15px;
-            transition: box-shadow 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: all 0.2s ease;
+            overflow: hidden;
         }
 
         .inquiry-card:hover {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-1px);
         }
 
         .inquiry-header {
-            background: #f8f9fa;
-            padding: 15px 20px;
-            border-bottom: 1px solid #e9ecef;
+            background: #f8fafc;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .inquiry-title {
-            font-size: 1.1rem;
+            font-size: 1.125rem;
             font-weight: 600;
-            color: #2c3e50;
+            color: #1e293b;
             margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .inquiry-body {
-            padding: 20px;
+            padding: 24px;
         }
 
         .inquiry-details {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 15px;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .inquiry-details {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
         }
 
         .detail-item {
@@ -74,79 +83,93 @@
         }
 
         .detail-label {
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            color: #6c757d;
-            margin-bottom: 5px;
+            color: #64748b;
+            margin-bottom: 6px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.05em;
         }
 
         .detail-value {
-            font-size: 0.95rem;
-            color: #2c3e50;
-            line-height: 1.4;
+            font-size: 0.875rem;
+            color: #334155;
+            line-height: 1.5;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .description-section {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #f1f3f4;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
         }
 
         .evidence-section {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #f1f3f4;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
         }
 
         .evidence-link {
-            color: #4f46e5;
+            color: #6366f1;
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .evidence-link:hover {
+            color: #4f46e5;
             text-decoration: underline;
         }
 
         .status-badge {
-            background: linear-gradient(45deg, #ffc107, #ffeb3b);
-            color: #333;
-            font-weight: bold;
-            border-radius: 12px;
-            padding: 6px 12px;
-            font-size: 0.8rem;
+            background-color: #10b981;
+            color: white;
+            font-weight: 500;
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .status-badge.pending {
-            background: linear-gradient(45deg, #ffc107, #ffeb3b);
+            background-color: #f59e0b;
         }
 
         .status-badge.under-investigation {
-            background: linear-gradient(45deg, #17a2b8, #20c997);
+            background-color: #10b981;
+        }
+
+        .add-inquiry-btn {
+            margin-top: 80px;
+            margin-right: 40px;
+            background-color: #007bff;
             color: white;
-        }        .add-inquiry-btn {
-            position: fixed !important;
-            top: 85px !important;
-            right: 50px !important;
-            z-index: 9999 !important;
-            background: linear-gradient(45deg, #007bff, #0056b3);
-            border: none;
-            border-radius: 25px;
-            padding: 12px 24px;
-            color: white;
-            font-weight: 600;
-            font-size: 0.9rem;
-            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
-            transition: all 0.3s ease;
+            border: 1px solid #007bff;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            z-index: 1000;
         }
 
         .add-inquiry-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 123, 255, 0.4);
+            background-color: #0056b3;
             color: white;
-            background: linear-gradient(45deg, #0056b3, #004085);
+            text-decoration: none;
         }
 
         .agency-tag {
@@ -191,6 +214,67 @@
             border-radius: 5px;
             margin: 1rem 0;
         }
+
+        .inquiry-actions {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            text-align: right;
+        }
+
+        .view-btn {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
+            font-size: 0.875rem;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+
+        .view-btn:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            color: white;
+        }
+
+        .description-truncated {
+            display: inline;
+        }
+
+        .description-full {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .modal .detail-group {
+            margin-bottom: 15px;
+        }
+
+        .modal .detail-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .modal .detail-content {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+
+        .modal-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .modal-title {
+            color: #495057;
+            font-weight: 600;
+        }
     </style>
 </head>
 
@@ -198,8 +282,9 @@
     <!-- Include Sidebar -->
     @include('layouts.sidebarPublic')
     <!-- Add New Inquiry Button -->
-    <button class="btn add-inquiry-btn" onclick="addNewInquiry()">
-        <i class="fas fa-plus me-2"></i>Add New Inquiry
+    <button class="add-inquiry-btn" onclick="openAddInquiryModal()">
+        <i class="fas fa-plus"></i>
+        Add New Inquiry
     </button>
 
     <!-- Main Content -->
@@ -207,19 +292,190 @@
         <div class="content-wrapper">
             <!-- Content Container -->
             <div class="container-fluid" id="inquiry-container">
-                <div class="loading-spinner">
+                <div class="loading-spinner" id="loading-spinner">
                     <i class="fas fa-spinner fa-spin fa-2x"></i>
                     <p>Loading inquiries...</p>
                 </div>
+
+                <!-- Error Message Template -->
+                <div class="error-message" id="error-message" style="display: none;">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span id="error-text"></span>
+                    <button class="btn btn-sm btn-outline-danger ms-2" onclick="loadInquiries()">
+                        <i class="fas fa-redo me-1"></i>Retry
+                    </button>
+                </div>
+
+                <!-- No Inquiries Template -->
+                <div class="text-center py-5" id="no-inquiries" style="display: none;">
+                    <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Active Inquiries</h4>
+                    <p class="text-muted">All inquiries have been processed or there are no new inquiries to display.</p>
+                </div>
+                <!-- Inquiries List Container -->
+                <div id="inquiries-list"></div>
             </div>
         </div>
-    </div> <!-- Scripts -->
+    </div>
+
+    <!-- Inquiry Card Template (Hidden) -->
+    <template id="inquiry-card-template">
+        <div class="inquiry-card">
+            <div class="inquiry-header">
+                <h5 class="inquiry-title">
+                    <i class="fas fa-file-alt me-2"></i>
+                    <span class="title-text"></span>
+                </h5>
+                <span class="badge status-badge">
+                    <i class="fas fa-clock me-1"></i>
+                    <span class="status-text"></span>
+                </span>
+            </div>
+
+            <div class="inquiry-body">
+                <div class="inquiry-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Applied Date:</div>
+                        <div class="detail-value">
+                            <i class="fas fa-calendar me-1"></i>
+                            <span class="applied-date"></span>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-label">Assigned Agency:</div>
+                        <div class="detail-value">
+                            <i class="fas fa-building me-1"></i>
+                            <span class="agency-name"></span>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-label">Assignment Date:</div>
+                        <div class="detail-value">
+                            <i class="fas fa-calendar-check me-1"></i>
+                            <span class="assignment-date"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="description-section">
+                    <div class="detail-label">Description:</div>
+                    <div class="detail-value">
+                        <span class="description-text"></span>
+                    </div>
+                </div>
+                <div class="evidence-section">
+                    <div class="detail-label">Evidence:</div>
+                    <div class="evidence-content">
+                        <!-- Evidence link or N/A will be inserted here -->
+                    </div>
+                </div>
+
+                <div class="inquiry-actions">
+                    <button type="button" class="btn btn-primary btn-sm view-btn" onclick="viewInquiryDetails(this)">
+                        <i class="fas fa-eye me-1"></i>View Details
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Modal for Inquiry Details -->
+    <div class="modal fade" id="inquiryModal" tabindex="-1" aria-labelledby="inquiryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="inquiryModalLabel">
+                        <i class="fas fa-file-alt me-2"></i>Inquiry Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="detail-group">
+                                <label class="detail-label">Title:</label>
+                                <div class="detail-content" id="modal-title"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-group">
+                                <label class="detail-label">Status:</label>
+                                <div class="detail-content">
+                                    <span class="badge" id="modal-status"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="detail-group">
+                                <label class="detail-label">Applied Date:</label>
+                                <div class="detail-content" id="modal-applied-date"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-group">
+                                <label class="detail-label">Assignment Date:</label>
+                                <div class="detail-content" id="modal-assignment-date"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="detail-group">
+                                <label class="detail-label">Assigned Agency:</label>
+                                <div class="detail-content" id="modal-agency"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-group">
+                                <label class="detail-label">Applicant:</label>
+                                <div class="detail-content" id="modal-applicant"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="detail-group">
+                                <label class="detail-label">Description:</label>
+                                <div class="detail-content description-full" id="modal-description"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="detail-group">
+                                <label class="detail-label">Evidence:</label>
+                                <div class="detail-content" id="modal-evidence"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Application configuration
         const API_ENDPOINTS = {
             inquiries: '/module3/status/get-inquiries',
             statistics: '/module3/status/statistics'
+        };
+
+        // DOM elements
+        const elements = {
+            container: document.getElementById('inquiry-container'),
+            loadingSpinner: document.getElementById('loading-spinner'),
+            errorMessage: document.getElementById('error-message'),
+            errorText: document.getElementById('error-text'),
+            noInquiries: document.getElementById('no-inquiries'),
+            inquiriesList: document.getElementById('inquiries-list'),
+            template: document.getElementById('inquiry-card-template')
         };
 
         // Load inquiries when page loads
@@ -243,139 +499,107 @@
                 console.error('Error loading inquiries:', error);
                 showError('Failed to load inquiries. Please try again later.');
             }
-        } // Function to display inquiries
+        }
+
+        // Function to display inquiries
         function displayInquiries(inquiries) {
-            const container = document.getElementById('inquiry-container');
+            hideAllViews();
 
             if (inquiries.length === 0) {
                 showNoInquiries();
                 return;
             }
 
-            let html = '';
+            // Clear previous inquiries
+            elements.inquiriesList.innerHTML = '';
+
+            // Create inquiry cards
             inquiries.forEach(inquiry => {
-                html += createInquiryCard(inquiry);
+                const card = createInquiryCard(inquiry);
+                elements.inquiriesList.appendChild(card);
             });
 
-            container.innerHTML = html;
-        } // Function to create inquiry card HTML
+            // Show inquiries list
+            elements.inquiriesList.style.display = 'block';
+        } // Function to create inquiry card from template
         function createInquiryCard(inquiry) {
+            // Clone the template
+            const template = elements.template.content.cloneNode(true);
+
+            // Get the card element
+            const card = template.querySelector('.inquiry-card');
+
+            // Store inquiry data on the card element for modal use
+            card.setAttribute('data-inquiry', JSON.stringify(inquiry));
+
+            // Populate title
+            template.querySelector('.title-text').textContent = inquiry.title;
+
+            // Populate and style status badge
+            const statusBadge = template.querySelector('.status-badge');
+            const statusText = template.querySelector('.status-text');
+            statusText.textContent = inquiry.final_status;
+
+            // Add status class for styling
             const statusClass = inquiry.final_status.toLowerCase().replace(' ', '-');
+            statusBadge.classList.add(statusClass);
+
+            // Populate dates and agency
+            template.querySelector('.applied-date').textContent = formatDate(inquiry.submission_date);
+            template.querySelector('.agency-name').textContent = inquiry.agency_name;
+            template.querySelector('.assignment-date').textContent = formatDate(inquiry.assignment_date || inquiry.submission_date);
+
+            // Populate description with truncation
+            const descriptionElement = template.querySelector('.description-text');
+            const fullDescription = inquiry.description || '';
+            const truncatedDescription = truncateText(fullDescription, 50);
+            descriptionElement.textContent = truncatedDescription;
 
             // Handle evidence section
-            let evidenceSection;
+            const evidenceContent = template.querySelector('.evidence-content');
             if (inquiry.evidence_url) {
-                evidenceSection = `
-                    <div class="evidence-section">
-                        <div class="detail-label">Evidence:</div>
-                        <a href="${escapeHtml(inquiry.evidence_url)}" target="_blank" class="evidence-link">
-                            <i class="fas fa-external-link-alt me-1"></i>View Evidence
-                        </a>
-                    </div>`;
+                evidenceContent.innerHTML = `
+                    <a href="${escapeHtml(inquiry.evidence_url)}" target="_blank" class="evidence-link">
+                        <i class="fas fa-external-link-alt me-1"></i>View Evidence
+                    </a>
+                `;
             } else {
-                evidenceSection = `
-                    <div class="evidence-section">
-                        <div class="detail-label">Evidence:</div>
-                        <div class="detail-value text-muted">
-                            <i class="fas fa-times-circle me-1"></i>N/A
-                        </div>
-                    </div>`;
+                evidenceContent.innerHTML = `
+                    <div class="detail-value text-muted">
+                        <i class="fas fa-times-circle me-1"></i>N/A
+                    </div>
+                `;
             }
 
-            return `
-                <div class="inquiry-card">
-                    <div class="inquiry-header">
-                        <h5 class="inquiry-title">
-                            <i class="fas fa-file-alt me-2"></i>
-                            ${escapeHtml(inquiry.title)}
-                        </h5>
-                        <span class="badge status-badge ${statusClass}">
-                            <i class="fas fa-clock me-1"></i>
-                            ${escapeHtml(inquiry.final_status)}
-                        </span>
-                    </div>
-                    
-                    <div class="inquiry-body">
-                        <div class="inquiry-details">
-                            <div class="detail-item">
-                                <div class="detail-label">Applied Date:</div>
-                                <div class="detail-value">
-                                    <i class="fas fa-calendar me-1"></i>
-                                    ${formatDate(inquiry.submission_date)}
-                                </div>
-                            </div>
-                            
-                            <div class="detail-item">
-                                <div class="detail-label">Assigned Agency:</div>
-                                <div class="detail-value">
-                                    <i class="fas fa-building me-1"></i>
-                                    ${escapeHtml(inquiry.agency_name)}
-                                </div>
-                            </div>
-                            
-                            <div class="detail-item">
-                                <div class="detail-label">Assignment Date:</div>
-                                <div class="detail-value">
-                                    <i class="fas fa-calendar-check me-1"></i>
-                                    ${formatDate(inquiry.assignment_date || inquiry.submission_date)}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="description-section">
-                            <div class="detail-label">Description:</div>
-                            <div class="detail-value">
-                                ${escapeHtml(inquiry.description)}
-                            </div>
-                        </div>
-                        
-                        ${evidenceSection}
-                    </div>
-                </div>
-            `;
+            return template;
         }
 
         // Function to show loading state
         function showLoading() {
-            const container = document.getElementById('inquiry-container');
-            container.innerHTML = `
-                <div class="loading-spinner">
-                    <i class="fas fa-spinner fa-spin fa-2x"></i>
-                    <p>Loading inquiries...</p>
-                </div>
-            `;
-        } // Function to show error message
+            hideAllViews();
+            elements.loadingSpinner.style.display = 'block';
+        }
+
+        // Function to show error message
         function showError(message) {
-            const container = document.getElementById('inquiry-container');
-            container.innerHTML = `
-                <div class="error-message">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    ${escapeHtml(message)}
-                    <button class="btn btn-sm btn-outline-danger ms-2" onclick="loadInquiries()">
-                        <i class="fas fa-redo me-1"></i>Retry
-                    </button>
-                </div>
-            `;
+            hideAllViews();
+            elements.errorText.textContent = message;
+            elements.errorMessage.style.display = 'block';
         }
 
         // Function to show no inquiries message
         function showNoInquiries() {
-            const container = document.getElementById('inquiry-container');
-            container.innerHTML = `
-                <div class="text-center py-5">
-                    <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
-                    <h4 class="text-muted">No Active Inquiries</h4>
-                    <p class="text-muted">All inquiries have been processed or there are no new inquiries to display.</p>
-                </div>
-            `;
+            hideAllViews();
+            elements.noInquiries.style.display = 'block';
         }
 
-        // Helper functions
-        function truncateText(text, length) {
-            if (!text) return '';
-            return text.length > length ? text.substring(0, length) + '...' : text;
-        }
-
+        // Function to hide all views
+        function hideAllViews() {
+            elements.loadingSpinner.style.display = 'none';
+            elements.errorMessage.style.display = 'none';
+            elements.noInquiries.style.display = 'none';
+            elements.inquiriesList.style.display = 'none';
+        } // Helper functions
         function formatDate(dateString) {
             if (!dateString) return '';
             const date = new Date(dateString);
@@ -393,12 +617,66 @@
             return div.innerHTML;
         }
 
+        function truncateText(text, maxLength) {
+            if (!text) return '';
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
+        }
+
+        // Function to handle view inquiry details button click
+        function viewInquiryDetails(button) {
+            // Find the inquiry card parent element
+            const inquiryCard = button.closest('.inquiry-card');
+
+            // Get inquiry data from the card
+            const inquiryData = JSON.parse(inquiryCard.getAttribute('data-inquiry'));
+
+            // Populate modal with inquiry details
+            populateModal(inquiryData);
+
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('inquiryModal'));
+            modal.show();
+        }
+
+        function populateModal(inquiry) {
+            // Basic information
+            document.getElementById('modal-title').textContent = inquiry.title || 'N/A';
+            document.getElementById('modal-applied-date').textContent = formatDate(inquiry.submission_date);
+            document.getElementById('modal-assignment-date').textContent = formatDate(inquiry.assignment_date || inquiry.submission_date);
+            document.getElementById('modal-agency').textContent = inquiry.agency_name || 'Unknown Agency';
+            document.getElementById('modal-applicant').textContent = inquiry.applicant_name || 'Unknown User';
+
+            // Full description
+            document.getElementById('modal-description').textContent = inquiry.description || 'No description available';
+
+            // Status badge
+            const statusElement = document.getElementById('modal-status');
+            statusElement.textContent = inquiry.final_status || 'Unknown';
+            statusElement.className = 'badge status-badge ' + (inquiry.final_status || '').toLowerCase().replace(' ', '-');
+
+            // Evidence
+            const evidenceElement = document.getElementById('modal-evidence');
+            if (inquiry.evidence_url) {
+                evidenceElement.innerHTML = `
+                    <a href="${escapeHtml(inquiry.evidence_url)}" target="_blank" class="evidence-link">
+                        <i class="fas fa-external-link-alt me-1"></i>View Evidence
+                    </a>
+                `;
+            } else {
+                evidenceElement.innerHTML = `
+                    <span class="text-muted">
+                        <i class="fas fa-times-circle me-1"></i>No evidence available
+                    </span>
+                `;
+            }
+        }
+
         function viewDetails(inquiryId) {
             alert(`View details for Inquiry #${inquiryId}`);
         }
 
-        function addNewInquiry() {
-            // TODO: Implement add new inquiry functionality
+        function openAddInquiryModal() {
             alert('Add New Inquiry functionality will be implemented here');
         }
     </script>
