@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id('agencyId');
             $table->string('agency_name', 50);
             $table->string('agencyPassword', 15);
-            $table->unsignedBigInteger('mcmcId')->nullable();
+            $table->foreignId('mcmcId')->nullable()->constrained('mcmc', 'mcmcId')->onDelete('set null');
             $table->timestamps();
             $table->string('agencyUsername', 20)->nullable();
 
