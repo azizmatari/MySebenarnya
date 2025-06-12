@@ -11,11 +11,12 @@ return new class extends Migration
         Schema::create('inquiry', function (Blueprint $table) {
             $table->id('inquiryId');
             $table->foreignId('userId')->constrained('publicuser', 'userId')->onDelete('cascade');
-            $table->foreignId('agencyId')->constrained('agency', 'agencyId')->onDelete('cascade');
             $table->string('title', 30);
             $table->text('description');
-            $table->enum('final_status', ['Under Investigation', 'True', 'Fake', 'Rejected']);
+            $table->enum('final_status', ['Under Investigation', 'True', 'Fake', 'Rejected'])->nullable();
             $table->date('submission_date');
+            $table->string('evidenceUrl', 150)->nullable();
+            $table->string('evidenceFileUrl', 150)->nullable();
             $table->timestamps();
         });
     }

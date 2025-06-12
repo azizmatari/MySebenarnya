@@ -12,10 +12,10 @@ return new class extends Migration
             $table->id('assignmentId');
             $table->foreignId('inquiryId')->constrained('inquiry', 'inquiryId')->onDelete('cascade');
             $table->foreignId('agencyId')->constrained('agency', 'agencyId')->onDelete('cascade');
-            $table->foreignId('staffId')->constrained('agencystaff', 'agencyStaffId')->onDelete('cascade');
             $table->text('comments')->nullable();
             $table->boolean('isRejected');
             $table->text('rejectedReason')->nullable();
+            $table->foreignId('mcmcId')->nullable()->constrained('mcmc', 'mcmcId')->onDelete('set null');
         });
     }
 

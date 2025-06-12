@@ -13,8 +13,6 @@ return new class extends Migration
             $table->foreignId('agencyId')->constrained('agency', 'agencyId')->onDelete('cascade');
             $table->string('agencyStaffName', 50);
             $table->string('agencyStaffEmail', 50);
-            $table->string('agencyStaffUsername', 20);
-            $table->string('agencyStaffPassword', 15);
             $table->timestamps();
         });
     }
