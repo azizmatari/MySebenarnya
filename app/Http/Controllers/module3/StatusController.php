@@ -206,6 +206,94 @@ class StatusController extends Controller
     }
 
     /**
+     * Display the inquiry creation form
+     * 
+     * @return \Illuminate\View\View
+     */
+    public function createForm()
+    {
+        try {
+            Log::info('User accessing inquiry creation form');
+            // Return the inquiry creation form view
+            return view('module3.inquiry_create');
+        } catch (\Exception $e) {
+            Log::error('Error loading inquiry creation form: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load inquiry creation form.');
+        }
+    }
+
+    /**
+     * Store a new inquiry
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function store(Request $request)
+    {
+        try {
+            // Validate the request data
+            $validated = $request->validate([
+                'title' => 'required|string|max:30',
+                'description' => 'required|string',
+                'evidence_url' => 'nullable|url|max:150',
+                'evidence_file' => 'nullable|file|max:10240', // 10MB max file size
+            ]);
+
+            // TODO: Implement actual inquiry creation logic with StatusModule
+            // For now, just redirect back with success message
+
+            Log::info('New inquiry submitted', [
+                'title' => $validated['title'],
+                'user_id' => session('user_id') ?? 1, // Default to user ID 1 for testing
+            ]);
+
+            return redirect()->route('module3.status')
+                ->with('success', 'Inquiry submitted successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->validator)
+                ->withInput();
+        } catch (\Exception $e) {
+            Log::error('Error storing new inquiry: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Failed to submit inquiry. Please try again later.')
+                ->withInput();
+        }
+    }
+
+    /**
+     * Display the user's inquiry history
+     * 
+     * @return \Illuminate\View\View
+     */
+    public function history()
+    {
+        try {
+            // For now, just return a placeholder view
+            return view('module3.inquiry_history');
+        } catch (\Exception $e) {
+            Log::error('Error loading inquiry history: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load inquiry history.');
+        }
+    }
+
+    /**
+     * Display public inquiries
+     * 
+     * @return \Illuminate\View\View
+     */
+    public function public()
+    {
+        try {
+            // For now, just return a placeholder view
+            return view('module3.inquiry_public');
+        } catch (\Exception $e) {
+            Log::error('Error loading public inquiries: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to load public inquiries.');
+        }
+    }
+
+    /**
      * Format inquiries data for the view
      *
      * @param array $inquiries

@@ -20,7 +20,6 @@ return new class extends Migration
             $table->timestamps();
             $table->string('evidenceUrl', 150)->nullable();
             $table->string('evidenceFileUrl', 150)->nullable();
-            $table->unsignedBigInteger('agencyId')->nullable();
 
             // Add indexes for better performance
             $table->index('userId', 'idx_inquiry_user');

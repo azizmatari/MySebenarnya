@@ -220,10 +220,7 @@
         </div>
         <div class="nav-divider">INQUIRY MANAGEMENT</div>
         <!-- Submit New Inquiry -->
-        <div class="nav-item">
-            <i class="material-icons">add_circle</i>
-            <a href="{{ route('inquiry.create') }}" style="color: #6c757d;">Submit New Inquiry</a>
-        </div>
+        
         <!-- My Inquiries -->
         <div class="nav-item">
             <i class="material-icons">list_alt</i>

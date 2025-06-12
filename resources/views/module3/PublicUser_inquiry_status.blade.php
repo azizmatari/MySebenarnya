@@ -202,7 +202,7 @@
     @include('layouts.sidebarPublic')
 
     <!-- Add New Inquiry Button -->
-    <a href="#" onclick="openAddInquiryModal()" class="add-inquiry-btn">
+    <a href="{{ route('inquiry.create') }}" class="add-inquiry-btn">
         <i class="fas fa-plus"></i>
         Add New Inquiry
     </a>
