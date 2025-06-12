@@ -269,22 +269,34 @@
         .modal-header {
             background-color: #f8f9fa;
             border-bottom: 1px solid #dee2e6;
-        }
-
-        .modal-title {
+        }        .modal-title {
             color: #495057;
             font-weight: 600;
+        }
+
+        .evidence-item {
+            padding: 8px 0;
+        }
+
+        .evidence-item strong {
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .evidence-item .evidence-link {
+            margin-top: 4px;
+            display: inline-block;
         }
     </style>
 </head>
 
-<body>
-    <!-- Include Sidebar -->
+<body> <!-- Include Sidebar -->
     @include('layouts.sidebarPublic')
+
     <!-- Add New Inquiry Button -->
-    <a href="{{ route('inquiry.create') }}" class="btn btn-primary">
-    <i class="material-icons" style="vertical-align: middle; margin-right: 8px;">add_circle</i>
-    Submit New Inquiry
+    <a href="#" onclick="openAddInquiryModal()" class="add-inquiry-btn">
+        <i class="fas fa-plus"></i>
+        Add New Inquiry
     </a>
 
     <!-- Main Content -->
@@ -553,23 +565,44 @@
             const descriptionElement = template.querySelector('.description-text');
             const fullDescription = inquiry.description || '';
             const truncatedDescription = truncateText(fullDescription, 50);
-            descriptionElement.textContent = truncatedDescription;
-
-            // Handle evidence section
+            descriptionElement.textContent = truncatedDescription;            // Handle evidence section
             const evidenceContent = template.querySelector('.evidence-content');
+            let evidenceHtml = '';
+            
+            // Check for evidence URL (link)
             if (inquiry.evidence_url) {
-                evidenceContent.innerHTML = `
-                    <a href="${escapeHtml(inquiry.evidence_url)}" target="_blank" class="evidence-link">
-                        <i class="fas fa-external-link-alt me-1"></i>View Evidence
-                    </a>
+                evidenceHtml += `
+                    <div class="evidence-item mb-2">
+                        <strong>Evidence Link:</strong><br>
+                        <a href="${escapeHtml(inquiry.evidence_url)}" target="_blank" class="evidence-link">
+                            <i class="fas fa-external-link-alt me-1"></i>View Evidence Link
+                        </a>
+                    </div>
                 `;
-            } else {
-                evidenceContent.innerHTML = `
+            }
+            
+            // Check for evidence file URL (image/file)
+            if (inquiry.evidence_file_url) {
+                evidenceHtml += `
+                    <div class="evidence-item mb-2">
+                        <strong>Evidence File:</strong><br>
+                        <a href="${escapeHtml(inquiry.evidence_file_url)}" target="_blank" class="evidence-link">
+                            <i class="fas fa-file-image me-1"></i>View Evidence File
+                        </a>
+                    </div>
+                `;
+            }
+            
+            // If no evidence at all
+            if (!inquiry.evidence_url && !inquiry.evidence_file_url) {
+                evidenceHtml = `
                     <div class="detail-value text-muted">
                         <i class="fas fa-times-circle me-1"></i>N/A
                     </div>
                 `;
             }
+            
+            evidenceContent.innerHTML = evidenceHtml;
 
             return template;
         }
@@ -653,23 +686,44 @@
             // Status badge
             const statusElement = document.getElementById('modal-status');
             statusElement.textContent = inquiry.final_status || 'Unknown';
-            statusElement.className = 'badge status-badge ' + (inquiry.final_status || '').toLowerCase().replace(' ', '-');
-
-            // Evidence
+            statusElement.className = 'badge status-badge ' + (inquiry.final_status || '').toLowerCase().replace(' ', '-');            // Evidence
             const evidenceElement = document.getElementById('modal-evidence');
+            let evidenceHtml = '';
+            
+            // Check for evidence URL (link)
             if (inquiry.evidence_url) {
-                evidenceElement.innerHTML = `
-                    <a href="${escapeHtml(inquiry.evidence_url)}" target="_blank" class="evidence-link">
-                        <i class="fas fa-external-link-alt me-1"></i>View Evidence
-                    </a>
+                evidenceHtml += `
+                    <div class="evidence-item mb-3">
+                        <strong>Evidence Link:</strong><br>
+                        <a href="${escapeHtml(inquiry.evidence_url)}" target="_blank" class="evidence-link">
+                            <i class="fas fa-external-link-alt me-1"></i>View Evidence Link
+                        </a>
+                    </div>
                 `;
-            } else {
-                evidenceElement.innerHTML = `
+            }
+            
+            // Check for evidence file URL (image/file)
+            if (inquiry.evidence_file_url) {
+                evidenceHtml += `
+                    <div class="evidence-item mb-3">
+                        <strong>Evidence File:</strong><br>
+                        <a href="${escapeHtml(inquiry.evidence_file_url)}" target="_blank" class="evidence-link">
+                            <i class="fas fa-file-image me-1"></i>View Evidence File
+                        </a>
+                    </div>
+                `;
+            }
+            
+            // If no evidence at all
+            if (!inquiry.evidence_url && !inquiry.evidence_file_url) {
+                evidenceHtml = `
                     <span class="text-muted">
                         <i class="fas fa-times-circle me-1"></i>No evidence available
                     </span>
                 `;
             }
+            
+            evidenceElement.innerHTML = evidenceHtml;
         }
 
         function viewDetails(inquiryId) {

@@ -12,8 +12,7 @@ class StatusModule extends Model
      * Get all inquiries with "Under Investigation" or "Pending" status
      * Including agency and user information
      */    public static function getActiveInquiries()
-    {
-        try {
+    {        try {
             $inquiries = DB::select("
                 SELECT 
                     i.inquiryId,
@@ -23,12 +22,13 @@ class StatusModule extends Model
                     i.submission_date,
                     '--' as agency_name,
                     COALESCE(pu.userName, 'Unknown User') as applicant_name,
-                    COALESCE(i.evidenceUrl, NULL) as evidence_url
+                    COALESCE(i.evidenceUrl, NULL) as evidence_url,
+                    COALESCE(i.evidenceFileUrl, NULL) as evidence_file_url
                 FROM inquiry i
                 LEFT JOIN publicuser pu ON i.userId = pu.userId
                 WHERE (i.final_status IN ('Under Investigation', 'Pending') OR i.final_status IS NULL)
                 ORDER BY i.submission_date DESC
-            "); // Log the count for debugging
+            ");// Log the count for debugging
             Log::info('Active inquiries found: ' . count($inquiries));
 
             return $inquiries;
