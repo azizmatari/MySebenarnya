@@ -219,23 +219,22 @@
             <a href="{{ route('module3.status') }}">Dashboard</a>
         </div>
         <div class="nav-divider">INQUIRY MANAGEMENT</div>
-        <!-- Current active page -->
-        <div class="nav-item active">
-            <i class="material-icons">search</i>
-            <a href="{{ route('module3.status') }}">Inquiry subimit</a>
-        </div>
-        <!-- Future features -->
+        <!-- Active inquiry tracking -->
+        
+        <!-- Submit new inquiry -->
         <div class="nav-item">
             <i class="material-icons">add_circle</i>
-            <a href="#" style="color: #6c757d;">Submit New Inquiry</a>
+            <a href="{{ route('module2.inquiry.User.UserCreateInquiry') }}">Submit New Inquiry</a>
         </div>
-        <div class="nav-item">
+        <!-- My inquiries -->
+        <!-- <div class="nav-item">
             <i class="material-icons">list_alt</i>
-            <a href="#" style="color: #6c757d;">My Inquiries</a>
-        </div>
+            <a href="{{ route('module2.inquiry.my-inquiries') }}">My Inquiries</a>
+        </div> -->
+        <!-- Inquiry guidelines -->
         <div class="nav-item">
-            <i class="material-icons">history</i>
-            <a href="#" style="color: #6c757d;">Inquiry History</a>
+            <i class="material-icons">help</i>
+            <a href="#" style="color: #6c757d;">Guidelines</a>
         </div>
     </div>
 </div>
