@@ -8,6 +8,46 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-nav a:hover {
+            background: rgba(255,255,255,0.1);
+            padding-left: 10px;
+        }
+
+        .sidebar-nav a.disabled {
+            color: rgba(255,255,255,0.5);
+            cursor: not-allowed;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 0;
+        }
+
         .inquiry-card {
             border-left: 4px solid #ffc107;
             transition: all 0.3s ease;
@@ -31,6 +71,13 @@
             padding: 3px 10px;
             font-size: 0.85em;
         }
+
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+        }
+
         .inquiry-counter {
             background: rgba(255, 255, 255, 0.2);
             border-radius: 10px;
@@ -40,11 +87,36 @@
 </head>
 
 <body class="bg-light">
-<?php include('../layouts/sidebarPublic.blade.php'); ?>
+    <!-- Include Sidebar -->
+    @include('layouts.sidebarPublic')
 
-    <div class="container my-5" id="inquiry-container">
-        <!-- Content will be loaded here by JavaScript -->
-    </div>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header Section -->
+        <div class="header-section">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="mb-2">
+                            <i class="fas fa-search me-3"></i>
+                            Active Inquiries Status
+                        </h1>
+                        <p class="mb-0 opacity-75">Monitor inquiries currently under investigation</p>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="inquiry-counter text-center">
+                            <h3 class="mb-1" id="inquiry-count">0</h3>
+                            <small>Active Inquiries</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Container -->
+        <div class="container my-5" id="inquiry-container">
+            <!-- Content will be loaded here by JavaScript -->
+        </div>
     </div>
 
     <!-- Scripts -->
