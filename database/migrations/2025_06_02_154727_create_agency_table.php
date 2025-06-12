@@ -11,11 +11,13 @@ return new class extends Migration
         Schema::create('agency', function (Blueprint $table) {
             $table->id('agencyId');
             $table->string('agency_name', 50);
-            $table->string('agencyStaffEmail', 50);
-            $table->string('agencyUsername', 20);
             $table->string('agencyPassword', 15);
-            $table->foreignId('mcmcId')->nullable()->constrained('mcmc', 'mcmcId')->onDelete('set null');
+            $table->unsignedBigInteger('mcmcId')->nullable();
             $table->timestamps();
+            $table->string('agencyUsername', 20)->nullable();
+
+            // Add foreign key constraint
+            $table->foreign('mcmcId')->references('mcmcId')->on('mcmc');
         });
     }
 
