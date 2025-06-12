@@ -6,62 +6,147 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Active Inquiries - Status Tracking</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            width: 250px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            position: fixed;
-            height: 100vh;
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: auto;
+            overflow-x: hidden;
             overflow-y: auto;
         }
 
-        .sidebar-nav a {
-            display: block;
-            color: white;
-            text-decoration: none;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.3s ease;
-        }
-
-        .sidebar-nav a:hover {
-            background: rgba(255,255,255,0.1);
-            padding-left: 10px;
-        }
-
-        .sidebar-nav a.disabled {
-            color: rgba(255,255,255,0.5);
-            cursor: not-allowed;
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .main-content {
-            flex: 1;
-            margin-left: 250px;
-            padding: 0;
+            margin-left: 260px;
+            margin-top: 0;
+            padding: 20px;
+            min-height: 100vh;
         }
 
         .inquiry-card {
-            border-left: 4px solid #ffc107;
-            transition: all 0.3s ease;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-left: 4px solid #4f46e5;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            transition: box-shadow 0.2s ease;
         }
 
         .inquiry-card:hover {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .inquiry-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .inquiry-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .inquiry-body {
+            padding: 20px;
+        }
+
+        .inquiry-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #6c757d;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            font-size: 0.95rem;
+            color: #2c3e50;
+            line-height: 1.4;
+        }
+
+        .description-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #f1f3f4;
+        }
+
+        .evidence-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #f1f3f4;
+        }
+
+        .evidence-link {
+            color: #4f46e5;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .evidence-link:hover {
+            text-decoration: underline;
         }
 
         .status-badge {
             background: linear-gradient(45deg, #ffc107, #ffeb3b);
             color: #333;
             font-weight: bold;
+            border-radius: 12px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .status-badge.pending {
+            background: linear-gradient(45deg, #ffc107, #ffeb3b);
+        }
+
+        .status-badge.under-investigation {
+            background: linear-gradient(45deg, #17a2b8, #20c997);
+            color: white;
+        }        .add-inquiry-btn {
+            position: fixed !important;
+            top: 85px !important;
+            right: 50px !important;
+            z-index: 9999 !important;
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 24px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .add-inquiry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 123, 255, 0.4);
+            color: white;
+            background: linear-gradient(45deg, #0056b3, #004085);
         }
 
         .agency-tag {
@@ -70,154 +155,207 @@
             border-radius: 15px;
             padding: 3px 10px;
             font-size: 0.85em;
+            display: inline-block;
         }
 
         .header-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem 0;
+            display: none;
         }
 
         .inquiry-counter {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
+            display: none;
+        }
+
+        .content-wrapper {
+            margin-top: 70px;
+        }
+
+        .card-header {
+            background: white !important;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .card-footer {
+            background: #f8f9fa !important;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
             padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
         }
     </style>
 </head>
 
-<body class="bg-light">
+<body>
     <!-- Include Sidebar -->
     @include('layouts.sidebarPublic')
+    <!-- Add New Inquiry Button -->
+    <button class="btn add-inquiry-btn" onclick="addNewInquiry()">
+        <i class="fas fa-plus me-2"></i>Add New Inquiry
+    </button>
 
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Header Section -->
-        <div class="header-section">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h1 class="mb-2">
-                            <i class="fas fa-search me-3"></i>
-                            Active Inquiries Status
-                        </h1>
-                        <p class="mb-0 opacity-75">Monitor inquiries currently under investigation</p>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="inquiry-counter text-center">
-                            <h3 class="mb-1" id="inquiry-count">0</h3>
-                            <small>Active Inquiries</small>
-                        </div>
-                    </div>
+        <div class="content-wrapper">
+            <!-- Content Container -->
+            <div class="container-fluid" id="inquiry-container">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <p>Loading inquiries...</p>
                 </div>
             </div>
         </div>
-
-        <!-- Content Container -->
-        <div class="container my-5" id="inquiry-container">
-            <!-- Content will be loaded here by JavaScript -->
-        </div>
-    </div>
-
-    <!-- Scripts -->
+    </div> <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Application configuration
+        const API_ENDPOINTS = {
+            inquiries: '/module3/status/get-inquiries',
+            statistics: '/module3/status/statistics'
+        };
+
         // Load inquiries when page loads
         document.addEventListener('DOMContentLoaded', function() {
             loadInquiries();
         });
 
         // Function to load inquiries via AJAX
-        function loadInquiries() {
-            fetch('/module3/status/get-inquiries')
-                .then(response => response.json())
-                .then(data => {
-                    displayInquiries(data);
-                })
-                .catch(error => {
-                    console.error('Error loading inquiries:', error);
-                    showNoInquiries();
-                });
-        }
+        async function loadInquiries() {
+            try {
+                showLoading();
+                const response = await fetch(API_ENDPOINTS.inquiries);
 
-        // Function to display inquiries
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                displayInquiries(data.inquiries || data);
+            } catch (error) {
+                console.error('Error loading inquiries:', error);
+                showError('Failed to load inquiries. Please try again later.');
+            }
+        } // Function to display inquiries
         function displayInquiries(inquiries) {
             const container = document.getElementById('inquiry-container');
-            const countElement = document.getElementById('inquiry-count');
-
-            countElement.textContent = inquiries.length;
 
             if (inquiries.length === 0) {
                 showNoInquiries();
                 return;
             }
 
-            let html = '<div class="row">';
-
+            let html = '';
             inquiries.forEach(inquiry => {
-                html += `
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card inquiry-card h-100">
-                            <div class="card-header bg-white border-bottom">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <h6 class="card-title mb-1 fw-bold text-primary">
-                                        #${inquiry.inquiryId} - ${inquiry.title}
-                                    </h6>
-                                    <span class="badge status-badge">
-                                        <i class="fas fa-magnifying-glass me-1"></i>
-                                        ${inquiry.final_status}
-                                    </span>
+                html += createInquiryCard(inquiry);
+            });
+
+            container.innerHTML = html;
+        } // Function to create inquiry card HTML
+        function createInquiryCard(inquiry) {
+            const statusClass = inquiry.final_status.toLowerCase().replace(' ', '-');
+
+            // Handle evidence section
+            let evidenceSection;
+            if (inquiry.evidence_url) {
+                evidenceSection = `
+                    <div class="evidence-section">
+                        <div class="detail-label">Evidence:</div>
+                        <a href="${escapeHtml(inquiry.evidence_url)}" target="_blank" class="evidence-link">
+                            <i class="fas fa-external-link-alt me-1"></i>View Evidence
+                        </a>
+                    </div>`;
+            } else {
+                evidenceSection = `
+                    <div class="evidence-section">
+                        <div class="detail-label">Evidence:</div>
+                        <div class="detail-value text-muted">
+                            <i class="fas fa-times-circle me-1"></i>N/A
+                        </div>
+                    </div>`;
+            }
+
+            return `
+                <div class="inquiry-card">
+                    <div class="inquiry-header">
+                        <h5 class="inquiry-title">
+                            <i class="fas fa-file-alt me-2"></i>
+                            ${escapeHtml(inquiry.title)}
+                        </h5>
+                        <span class="badge status-badge ${statusClass}">
+                            <i class="fas fa-clock me-1"></i>
+                            ${escapeHtml(inquiry.final_status)}
+                        </span>
+                    </div>
+                    
+                    <div class="inquiry-body">
+                        <div class="inquiry-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Applied Date:</div>
+                                <div class="detail-value">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    ${formatDate(inquiry.submission_date)}
                                 </div>
                             </div>
                             
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <h6 class="text-muted mb-2">
-                                        <i class="fas fa-file-text me-2"></i>Description:
-                                    </h6>
-                                    <p class="text-dark">${truncateText(inquiry.description, 20)}</p>
-                                </div>
-
-                                <div class="mb-3">
-                                    <h6 class="text-muted mb-2">
-                                        <i class="fas fa-user me-2"></i>Applicant:
-                                    </h6>
-                                    <p class="text-dark">${inquiry.applicant_name}</p>
-                                </div>
-
-                                <div class="mb-3">
-                                    <h6 class="text-muted mb-2">
-                                        <i class="fas fa-building me-2"></i>Assigned Agency:
-                                    </h6>
-                                    <span class="agency-tag">${inquiry.agency_name}</span>
+                            <div class="detail-item">
+                                <div class="detail-label">Assigned Agency:</div>
+                                <div class="detail-value">
+                                    <i class="fas fa-building me-1"></i>
+                                    ${escapeHtml(inquiry.agency_name)}
                                 </div>
                             </div>
-
-                            <div class="card-footer bg-light">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">
-                                        <i class="fas fa-calendar-alt me-1"></i>
-                                        Applied: ${formatDate(inquiry.submission_date)}
-                                    </small>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="viewDetails(${inquiry.inquiryId})">
-                                        <i class="fas fa-eye me-1"></i>View
-                                    </button>
+                            
+                            <div class="detail-item">
+                                <div class="detail-label">Assignment Date:</div>
+                                <div class="detail-value">
+                                    <i class="fas fa-calendar-check me-1"></i>
+                                    ${formatDate(inquiry.assignment_date || inquiry.submission_date)}
                                 </div>
                             </div>
                         </div>
+                        
+                        <div class="description-section">
+                            <div class="detail-label">Description:</div>
+                            <div class="detail-value">
+                                ${escapeHtml(inquiry.description)}
+                            </div>
+                        </div>
+                        
+                        ${evidenceSection}
                     </div>
-                `;
-            });
+                </div>
+            `;
+        }
 
-            html += '</div>';
-
-            // Add statistics
-            html += generateStatistics(inquiries);
-
-            container.innerHTML = html;
-
-            // Add animations
-            addAnimations();
+        // Function to show loading state
+        function showLoading() {
+            const container = document.getElementById('inquiry-container');
+            container.innerHTML = `
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <p>Loading inquiries...</p>
+                </div>
+            `;
+        } // Function to show error message
+        function showError(message) {
+            const container = document.getElementById('inquiry-container');
+            container.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${escapeHtml(message)}
+                    <button class="btn btn-sm btn-outline-danger ms-2" onclick="loadInquiries()">
+                        <i class="fas fa-redo me-1"></i>Retry
+                    </button>
+                </div>
+            `;
         }
 
         // Function to show no inquiries message
@@ -232,58 +370,14 @@
             `;
         }
 
-        // Function to generate statistics
-        function generateStatistics(inquiries) {
-            const agencies = [...new Set(inquiries.map(i => i.agency_name))];
-            const recentInquiries = inquiries.filter(i => {
-                const submissionDate = new Date(i.submission_date);
-                const weekAgo = new Date();
-                weekAgo.setDate(weekAgo.getDate() - 7);
-                return submissionDate > weekAgo;
-            });
-
-            return `
-                <div class="row mt-5">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-chart-bar me-2"></i>
-                                    Summary Statistics
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row text-center">
-                                    <div class="col-md-4">
-                                        <div class="border-end">
-                                            <h3 class="text-warning">${inquiries.length}</h3>
-                                            <p class="text-muted mb-0">Under Investigation</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="border-end">
-                                            <h3 class="text-info">${agencies.length}</h3>
-                                            <p class="text-muted mb-0">Agencies Involved</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <h3 class="text-success">${recentInquiries.length}</h3>
-                                        <p class="text-muted mb-0">This Week</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
         // Helper functions
         function truncateText(text, length) {
+            if (!text) return '';
             return text.length > length ? text.substring(0, length) + '...' : text;
         }
 
         function formatDate(dateString) {
+            if (!dateString) return '';
             const date = new Date(dateString);
             return date.toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -292,29 +386,21 @@
             });
         }
 
-        function addAnimations() {
-            const cards = document.querySelectorAll('.inquiry-card');
-            cards.forEach((card, index) => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
-                setTimeout(() => {
-                    card.style.transition = 'all 0.5s ease';
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, index * 100);
-            });
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         function viewDetails(inquiryId) {
-            // You can implement this to show inquiry details in a modal or navigate to another page
-            alert('View details for Inquiry #' + inquiryId);
-            // Example: window.location.href = 'inquiry_details.php?id=' + inquiryId;
+            alert(`View details for Inquiry #${inquiryId}`);
         }
 
-        // Auto-refresh every 30 seconds to show real-time updates
-        setInterval(function() {
-            loadInquiries();
-        }, 30000);
+        function addNewInquiry() {
+            // TODO: Implement add new inquiry functionality
+            alert('Add New Inquiry functionality will be implemented here');
+        }
     </script>
 </body>
 
