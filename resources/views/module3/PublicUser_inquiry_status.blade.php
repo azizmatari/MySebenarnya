@@ -35,8 +35,13 @@
             border-left: 4px solid #4f46e5;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             transition: box-shadow 0.2s ease;
+            width: 100%;
+        }
+
+        .inquiry-card:first-child {
+            margin-top: 50px;
         }
 
         .inquiry-card:hover {
@@ -45,7 +50,7 @@
 
         .inquiry-header {
             background: #f8f9fa;
-            padding: 15px 20px;
+            padding: 20px 25px;
             border-bottom: 1px solid #e9ecef;
             display: flex;
             justify-content: space-between;
@@ -53,21 +58,21 @@
         }
 
         .inquiry-title {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: 600;
             color: #2c3e50;
             margin: 0;
         }
 
         .inquiry-body {
-            padding: 20px;
+            padding: 25px;
         }
 
         .inquiry-details {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 15px;
+            gap: 25px;
+            margin-bottom: 20px;
         }
 
         .detail-item {
@@ -91,21 +96,34 @@
         }
 
         .description-section {
-            margin-top: 15px;
-            padding-top: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
             border-top: 1px solid #f1f3f4;
         }
 
         .evidence-section {
-            margin-top: 15px;
-            padding-top: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
             border-top: 1px solid #f1f3f4;
+        }
+
+        .evidence-items-container {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .evidence-item {
+            flex: 1;
+            min-width: 200px;
         }
 
         .evidence-link {
             color: #4f46e5;
             text-decoration: none;
             font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
         }
 
         .evidence-link:hover {
@@ -131,18 +149,22 @@
         }
 
         .add-inquiry-btn {
-            position: fixed !important;
-            top: 85px !important;
-            right: 50px !important;
-            z-index: 9999 !important;
-            background: linear-gradient(45deg, #007bff, #0056b3);
-            border: none;
-            border-radius: 25px;
-            padding: 12px 24px;
+            position: absolute;
+            right: 20px;
+            top: -58px;
+            z-index: 10;
+            background-color: #007bff;
             color: white;
-            font-weight: 600;
-            font-size: 0.9rem;
-            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+            border: 1px solid #007bff;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
             transition: all 0.3s ease;
         }
 
@@ -151,6 +173,24 @@
             box-shadow: 0 6px 12px rgba(0, 123, 255, 0.4);
             color: white;
             background: linear-gradient(45deg, #0056b3, #004085);
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .inquiries-wrapper {
+            position: relative;
+            margin-top: 70px;
         }
 
         .agency-tag {
@@ -195,30 +235,126 @@
             border-radius: 5px;
             margin: 1rem 0;
         }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+
+            .page-header {
+                margin-bottom: 20px;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .add-inquiry-btn {
+                position: static;
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+
+            .inquiries-wrapper {
+                margin-top: 20px;
+            }
+
+            .inquiry-card:first-child {
+                margin-top: 0;
+            }
+
+            .inquiry-details {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .inquiry-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .inquiry-card {
+                margin-bottom: 15px;
+            }
+
+            .inquiry-body {
+                padding: 15px;
+            }
+
+            .evidence-items-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .evidence-item {
+                min-width: auto;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .inquiry-details {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
     </style>
 </head>
 
 <body> <!-- Include Sidebar -->
     @include('layouts.sidebarPublic')
 
-    <!-- Add New Inquiry Button -->
-    <a href="{{ route('inquiry.create') }}" class="add-inquiry-btn">
-        <i class="fas fa-plus"></i>
-        Add New Inquiry
-    </a>
-
     <!-- Main Content -->
     <div class="main-content">
         <div class="content-wrapper">
-            <!-- Content Container -->
-            <div class="container-fluid" id="inquiry-container">
-                <div class="loading-spinner">
-                    <i class="fas fa-spinner fa-spin fa-2x"></i>
-                    <p>Loading inquiries...</p>
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-list-alt me-3"></i>Active Inquiries
+                </h1>
+            </div>
+
+            <!-- Inquiries Wrapper with Add Button -->
+            <div class="inquiries-wrapper">
+                <a href="{{ route('inquiry.create') }}" class="add-inquiry-btn">
+                    <i class="fas fa-plus"></i>
+                    Add New Inquiry
+                </a>
+
+                <!-- Content Container -->
+                <div class="container-fluid" id="inquiry-container">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                        <p>Loading inquiries...</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div> <!-- Scripts -->
+    </div>
+
+    <!-- Modal for viewing full inquiry details -->
+    <div class="modal fade" id="inquiryModal" tabindex="-1" aria-labelledby="inquiryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="inquiryModalLabel">
+                        <i class="fas fa-file-alt me-2"></i>Inquiry Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Content will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Application configuration
@@ -226,6 +362,9 @@
             inquiries: '/module3/status/get-inquiries',
             statistics: '/module3/status/statistics'
         };
+
+        // Global variable to store current inquiries for modal access
+        let currentInquiries = [];
 
         // Load inquiries when page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -236,13 +375,18 @@
         async function loadInquiries() {
             try {
                 showLoading();
+                console.log('Loading inquiries from:', API_ENDPOINTS.inquiries);
                 const response = await fetch(API_ENDPOINTS.inquiries);
+
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 const data = await response.json();
+                console.log('Received data:', data);
                 displayInquiries(data.inquiries || data);
             } catch (error) {
                 console.error('Error loading inquiries:', error);
@@ -251,6 +395,9 @@
         } // Function to display inquiries
         function displayInquiries(inquiries) {
             const container = document.getElementById('inquiry-container');
+
+            // Store inquiries globally for modal access
+            currentInquiries = inquiries;
 
             if (inquiries.length === 0) {
                 showNoInquiries();
@@ -268,36 +415,23 @@
             const statusClass = inquiry.final_status.toLowerCase().replace(' ', '-');
 
             // Handle evidence section
-            let evidenceSection;
-            if (inquiry.evidence_url) {
-                evidenceSection = `
-                    <div class="evidence-section">
-                        <div class="detail-label">Evidence:</div>
-                        <a href="${escapeHtml(inquiry.evidence_url)}" target="_blank" class="evidence-link">
-                            <i class="fas fa-external-link-alt me-1"></i>View Evidence
-                        </a>
-                    </div>`;
-            } else {
-                evidenceSection = `
-                    <div class="evidence-section">
-                        <div class="detail-label">Evidence:</div>
-                        <div class="detail-value text-muted">
-                            <i class="fas fa-times-circle me-1"></i>N/A
-                        </div>
-                    </div>`;
-            }
-
-            return `
+            const template = document.createElement('div');
+            template.innerHTML = `
                 <div class="inquiry-card">
                     <div class="inquiry-header">
                         <h5 class="inquiry-title">
                             <i class="fas fa-file-alt me-2"></i>
                             ${escapeHtml(inquiry.title)}
                         </h5>
-                        <span class="badge status-badge ${statusClass}">
-                            <i class="fas fa-clock me-1"></i>
-                            ${escapeHtml(inquiry.final_status)}
-                        </span>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="badge status-badge ${statusClass}">
+                                <i class="fas fa-clock me-1"></i>
+                                ${escapeHtml(inquiry.final_status)}
+                            </span>
+                            <button class="btn btn-outline-primary btn-sm" onclick="viewDetails(${inquiry.inquiryId})">
+                                <i class="fas fa-eye me-1"></i>View
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="inquiry-body">
@@ -314,7 +448,7 @@
                                 <div class="detail-label">Assigned Agency:</div>
                                 <div class="detail-value">
                                     <i class="fas fa-building me-1"></i>
-                                    ${escapeHtml(inquiry.agency_name)}
+                                    <span class="agency-tag">${escapeHtml(inquiry.agency_name)}</span>
                                 </div>
                             </div>
                             
@@ -330,14 +464,68 @@
                         <div class="description-section">
                             <div class="detail-label">Description:</div>
                             <div class="detail-value">
-                                ${escapeHtml(inquiry.description)}
+                                <span class="description-text">${truncateText(escapeHtml(inquiry.description), 50)}</span>
                             </div>
                         </div>
                         
-                        ${evidenceSection}
+                        <div class="evidence-section">
+                            <div class="detail-label">Evidence:</div>
+                            <div class="evidence-content">
+                                <div class="detail-value text-muted">
+                                    <i class="fas fa-times-circle me-1"></i>N/A
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            `;
+            `;            // Handle evidence section
+            const evidenceContent = template.querySelector('.evidence-content');
+            let evidenceHtml = '';
+
+            // Create a container for evidence items to display side by side
+            const hasEvidenceUrl = inquiry.evidence_url;
+            const hasEvidenceFile = inquiry.evidence_file_url;
+
+            if (hasEvidenceUrl || hasEvidenceFile) {
+                evidenceHtml = '<div class="evidence-items-container d-flex gap-4">';
+                
+                // Check for evidence URL (link)
+                if (hasEvidenceUrl) {
+                    evidenceHtml += `
+                        <div class="evidence-item">
+                            <strong>Evidence Link:</strong><br>
+                            <a href="${escapeHtml(inquiry.evidence_url)}" target="_blank" class="evidence-link">
+                                <i class="fas fa-external-link-alt me-1"></i>View Evidence Link
+                            </a>
+                        </div>
+                    `;
+                }
+                
+                // Check for evidence file URL (image/file)
+                if (hasEvidenceFile) {
+                    evidenceHtml += `
+                        <div class="evidence-item">
+                            <strong>Evidence File:</strong><br>
+                            <a href="${escapeHtml(inquiry.evidence_file_url)}" target="_blank" class="evidence-link">
+                                <i class="fas fa-file-image me-1"></i>View Evidence File
+                            </a>
+                        </div>
+                    `;
+                }
+                
+                evidenceHtml += '</div>';
+            } else {
+                // If no evidence, show N/A
+                evidenceHtml = `
+                    <div class="detail-value text-muted">
+                        <i class="fas fa-times-circle me-1"></i>N/A
+                    </div>
+                `;
+            }
+
+            evidenceContent.innerHTML = evidenceHtml;
+
+            return template.innerHTML;
         }
 
         // Function to show loading state
@@ -399,7 +587,111 @@
         }
 
         function viewDetails(inquiryId) {
-            alert(`View details for Inquiry #${inquiryId}`);
+            // Find the inquiry data from the loaded inquiries
+            const inquiry = currentInquiries.find(inq => inq.inquiryId == inquiryId);
+
+            if (!inquiry) {
+                alert('Inquiry details not found.');
+                return;
+            }
+
+            // Populate modal with full inquiry details
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong>Inquiry ID:</strong><br>
+                        <span class="text-muted">#${inquiry.inquiryId}</span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Status:</strong><br>
+                        <span class="badge status-badge ${inquiry.final_status.toLowerCase().replace(' ', '-')}">${escapeHtml(inquiry.final_status)}</span>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <strong>Applied Date:</strong><br>
+                        <span class="text-muted"><i class="fas fa-calendar me-1"></i>${formatDate(inquiry.submission_date)}</span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <strong>Assigned Agency:</strong><br>
+                        <span class="agency-tag">${escapeHtml(inquiry.agency_name)}</span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <strong>Assignment Date:</strong><br>
+                        <span class="text-muted"><i class="fas fa-calendar-check me-1"></i>${formatDate(inquiry.assignment_date || inquiry.submission_date)}</span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Title:</strong><br>
+                    <span class="text-muted">${escapeHtml(inquiry.title)}</span>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Full Description:</strong><br>
+                    <div class="p-3 bg-light rounded">
+                        ${escapeHtml(inquiry.description)}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Evidence:</strong><br>
+                    <div id="modalEvidenceSection">
+                        <!-- Evidence content will be populated here -->
+                    </div>
+                </div>
+            `;            // Handle evidence section in modal
+            const modalEvidenceSection = document.getElementById('modalEvidenceSection');
+            let evidenceHtml = '';
+
+            // Create a container for evidence items to display side by side
+            const hasEvidenceUrl = inquiry.evidence_url;
+            const hasEvidenceFile = inquiry.evidence_file_url;
+
+            if (hasEvidenceUrl || hasEvidenceFile) {
+                evidenceHtml = '<div class="evidence-items-container d-flex gap-4">';
+                
+                // Check for evidence URL (link)
+                if (hasEvidenceUrl) {
+                    evidenceHtml += `
+                        <div class="evidence-item">
+                            <strong>Evidence Link:</strong><br>
+                            <a href="${escapeHtml(inquiry.evidence_url)}" target="_blank" class="evidence-link">
+                                <i class="fas fa-external-link-alt me-1"></i>View Evidence Link
+                            </a>
+                        </div>
+                    `;
+                }
+                
+                // Check for evidence file URL (image/file)
+                if (hasEvidenceFile) {
+                    evidenceHtml += `
+                        <div class="evidence-item">
+                            <strong>Evidence File:</strong><br>
+                            <a href="${escapeHtml(inquiry.evidence_file_url)}" target="_blank" class="evidence-link">
+                                <i class="fas fa-file-image me-1"></i>View Evidence File
+                            </a>
+                        </div>
+                    `;
+                }
+                
+                evidenceHtml += '</div>';
+            } else {
+                // If no evidence, show N/A
+                evidenceHtml = `
+                    <div class="text-muted">
+                        <i class="fas fa-times-circle me-1"></i>No evidence provided
+                    </div>
+                `;
+            }
+
+            modalEvidenceSection.innerHTML = evidenceHtml;
+
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('inquiryModal'));
+            modal.show();
         }
 
         function addNewInquiry() {

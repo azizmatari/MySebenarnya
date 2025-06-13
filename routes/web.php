@@ -37,7 +37,7 @@ Route::get('/', function () {
     if (session()->has('user_id')) {
         // Check user role and redirect accordingly
         if (session('role') === 'public') {
-            return redirect()->route('inquiry.public');
+            return redirect()->route('module3.status');
         }
         return redirect()->route('user.dashboard');
     }
@@ -45,7 +45,7 @@ Route::get('/', function () {
     */
 
     // TEMPORARY: Direct redirect to inquiry status page for testing
-    return redirect()->route('inquiry.public');
+    return redirect()->route('module3.status');
 });
 
 // ==================
@@ -57,7 +57,7 @@ Route::get('/login', function () {
     return response()->view('temp_message', [
         'title' => 'Login Temporarily Disabled',
         'message' => 'Login functionality is temporarily disabled for testing. You will be redirected to the inquiry status page.',
-        'redirect_url' => route('inquiry.public'),
+        'redirect_url' => route('module3.status'),
         'redirect_text' => 'Go to Inquiry Status Page'
     ]);
 })->name('login');
@@ -95,18 +95,22 @@ Route::get('/forgot-password', function () {
 
 
 // ==================
-// Module 2 & 3 - Inquiry Routes
+// Module 3 - Status Routes
 // ==================
 
-// Display inquiry status page - using StatusController for compatibility
+// Display inquiry status page
 Route::get('/module3/status', [StatusController::class, 'index'])->name('module3.status');
 
-// Essential AJAX routes for inquiry data - using StatusController for compatibility
+// Essential AJAX routes for inquiry data
 Route::get('/module3/status/get-inquiries', [StatusController::class, 'getInquiries'])->name('module3.status.inquiries');
 Route::get('/module3/status/statistics', [StatusController::class, 'getStatistics'])->name('module3.status.statistics');
 
+// Debug route for testing
+Route::get('/test/status/debug', [StatusController::class, 'debugInquiries'])->name('test.status.debug');
+
+
 // ==================
-// Module 2 - Inquiry Routes
+// Module 2 - Inquiry Routes  
 // ==================
 
 // Create new inquiry form
@@ -121,5 +125,14 @@ Route::get('/inquiry/success', [InquiryController::class, 'success'])->name('inq
 // View inquiry history (user's own inquiries)
 Route::get('/inquiry/history', [InquiryController::class, 'index'])->name('inquiry.history');
 
-// View public inquiries
+// View public inquiries (completed inquiries for public viewing)
 Route::get('/inquiry/public', [InquiryController::class, 'publicInquiries'])->name('inquiry.public');
+
+// View evidence file for user's own inquiry
+Route::get('/inquiry/{inquiryId}/evidence/{filename}', [InquiryController::class, 'viewEvidenceFile'])->name('inquiry.evidence.view');
+
+// Test route for debugging inquiry list
+Route::get('/test/inquiry', [InquiryController::class, 'index'])->name('test.inquiry');
+
+// Test route for modal functionality
+Route::get('/test/inquiry/modals', [InquiryController::class, 'testInquiryModals'])->name('test.inquiry.modals');

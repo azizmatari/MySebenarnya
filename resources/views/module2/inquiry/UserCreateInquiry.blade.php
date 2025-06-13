@@ -21,7 +21,12 @@
                                 <h3 class="mb-0">
                                     <i class="material-icons" style="vertical-align: middle; margin-right: 10px;">add_circle</i>
                                     Create New Inquiry
-                                </h3>                            </div>                            <div class="card-body">                                <!-- Display Validation Errors -->
+                                </h3>
+                            </div>                            <div class="card-body">
+                                <p class="text-muted mb-4">
+                                </p>
+
+                                <!-- Display Validation Errors -->
                                 @if ($errors->any())
                                     <div class="alert alert-danger">
                                         <strong>Please fix the following errors:</strong>
@@ -33,26 +38,10 @@
                                     </div>
                                 @endif
 
-                                <!-- Display Success Message -->
-                                @if (session('success'))
-                                    <div class="alert alert-success alert-dismissible fade show">
-                                        <strong>Success!</strong> {{ session('success') }}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                    </div>
-                                @endif
-
-                                <!-- Display Error from Backend -->
-                                @if (session('error'))
-                                    <div class="alert alert-danger alert-dismissible fade show">
-                                        <strong>Error!</strong> {{ session('error') }}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                    </div>
-                                @endif
-
                                 <form action="{{ route('inquiry.store') }}" method="POST" enctype="multipart/form-data" id="inquiryForm">
                                     @csrf
                                     
-                                    <!-- News Title/Headline -->
+                                    <!-- News Title -->
                                     <div class="mb-4">
                                         <label for="news_title" class="form-label">
                                             <strong>News Title</strong> <span class="text-danger">*</span>
@@ -89,12 +78,11 @@
                                         <div class="form-text">
                                             <i class="material-icons" style="font-size: 14px; vertical-align: middle;">info</i>
                                             Please provide details in question (Max: 250 characters)
-                                        </div>@error('detailed_info')
+                                        </div>
+                                        @error('detailed_info')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
-                                    </div>
-
-                                    <!-- Evidence Files -->
+                                    </div>                                    <!-- Supporting Evidence Files -->
                                     <div class="mb-4">
                                         <label class="form-label">
                                             <strong>Evidence - Files</strong> <span class="text-danger">*</span>
@@ -103,45 +91,30 @@
                                             <div id="file-upload-area">
                                                 <input type="file" 
                                                        class="form-control mb-3" 
-                                                       name="evidence_files[]" 
-                                                       accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.txt,.mp4,.mp3"
+                                                       name="evidence_files[]"                                                       accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.txt,.mp4,.mp3"
                                                        multiple
                                                        required>
-                                                <div class="alert alert-info mb-0">
-                                                    <strong>Evidence Requirements:</strong>
-                                                    <ul class="mb-0 mt-2">
-                                                        <li><strong>Screenshots:</strong> Of the news post, article, or message</li>
-                                                        <li><strong>Documents:</strong> Related articles, reports, or official statements</li>
-                                                        <li><strong>Images:</strong> Photos related to the news claim</li>
-                                                        <li><strong>Audio/Video:</strong> Recordings of the news (if applicable)</li>
-                                                    </ul>
-                                                    <hr class="my-2">
-                                                    <small>
-                                                        <i class="material-icons" style="font-size: 14px; vertical-align: middle;">file_upload</i>
-                                                        Supported formats: JPG, PNG, PDF, DOC, DOCX, TXT, MP4, MP3 | Max: 10MB per file
-                                                    </small>
-                                                </div>
                                             </div>
-                                        </div>
-                                        @error('evidence_files.*')
+                                        </div>@error('evidence_files.*')
                                             <div class="text-danger mt-1">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                                        @enderror                                    </div>
 
-                                    <!--  Evidence Links -->
+                                    <!-- Supporting Evidence Links -->
                                     <div class="mb-4">
                                         <label class="form-label">
-                                            <strong> Evidence - Links</strong> <span class="text-muted">(Optional but Recommended)</span>
-                                        </label>                                        <div class="border rounded p-4 bg-light">                                            <div id="links-container">
-                                                <div class="link-input-group mb-3">
-                                                    <label class="form-label small">Original News Link:</label>                                                    <input type="url" 
-                                                           class="form-control" 
-                                                           name="evidence_links" 
-                                                           value="{{ old('evidence_links') }}"
-                                                           placeholder="https://example.com/"
-                                                           maxlength="500">
-                                                </div>
-                                            </div>                                        </div>@error('evidence_links')
+                                            <strong>Evidence - Links</strong> <span class="text-muted">(Optional)</span>
+                                        </label>                                        <div class="border rounded p-4 bg-light">
+                                            <div class="link-input-group mb-3">
+                                                <label class="form-label small">Original News Link:</label>
+                                                <input type="url" 
+                                                       class="form-control" 
+                                                       name="evidence_links" 
+                                                       value="{{ old('evidence_links') }}" 
+                                                       placeholder="https://example.com/" 
+                                                       maxlength="500">
+                                            </div>
+                                        </div>
+                                        @error('evidence_links.*')
                                             <div class="text-danger mt-1">{{ $message }}</div>
                                         @enderror
                                     </div>
@@ -150,7 +123,7 @@
                                     <div class="mb-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="terms" name="terms" {{ old('terms') ? 'checked' : '' }} required>
-                                            <label class="form-check-label" for="terms">
+                                            <label class="form-check-label small" for="terms">
                                                 I confirm that the information provided is accurate. <span class="text-danger">*</span>
                                             </label>
                                         </div>
@@ -158,6 +131,7 @@
                                             <div class="text-danger mt-1">{{ $message }}</div>
                                         @enderror
                                     </div>
+                                    
 
                                     <!-- Action Buttons -->
                                     <div class="d-grid gap-2 d-md-flex justify-content-md-end pt-3 border-top">
@@ -239,7 +213,7 @@
         }
     </style>    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>        document.addEventListener('DOMContentLoaded', function() {            
+    <script>        document.addEventListener('DOMContentLoaded', function() {
             // Form submission handling
             const form = document.getElementById('inquiryForm');
             const submitBtn = document.getElementById('submit-btn');
@@ -276,8 +250,7 @@
                     document.querySelector('.main-content').scrollTop = 0;
                     
                     return false;
-                }
-            });
+                }            });
             
             // Character count for text areas
             const detailedInfoTextarea = document.getElementById('detailed_info');
@@ -293,11 +266,13 @@
                 
                 function updateCounter() {
                     const remaining = maxLength - element.value.length;
+                    const percentage = (element.value.length / maxLength) * 100;
                     counter.textContent = `${element.value.length}/${maxLength} characters`;
-                    counter.style.color = '#6c757d'; // Keep it gray always
+                    
+                    // Only turn red when approaching the limit (90% or more used)
+                    counter.style.color = percentage >= 90 ? '#dc3545' : '#6c757d';
                 }
-                
-                element.addEventListener('input', updateCounter);
+                  element.addEventListener('input', updateCounter);
                 updateCounter();
             }});
         
@@ -343,7 +318,6 @@
             if (mimeType.includes('pdf')) return 'picture_as_pdf';
             if (mimeType.includes('document') || mimeType.includes('word')) return 'description';
             if (mimeType.startsWith('video/')) return 'video_file';
-            if (mimeType.startsWith('audio/')) return 'audio_file';
             return 'attach_file';
         }
     </script>
