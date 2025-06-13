@@ -16,34 +16,34 @@ class InquiryController extends Controller
     public function create()
     {
         return view('module2.inquiry.UserCreateInquiry');
-    }
-
-    /**
+    }    /**
      * Store a new inquiry with evidence
-     */    public function store(Request $request)
-    {
-        // Validate the request
+     */
+    public function store(Request $request)
+    {        // Validate the request
         $validated = $request->validate([
             'news_title' => 'required|string|max:30',
             'detailed_info' => 'required|string|max:250',
             'evidence_files.*' => 'required|file|max:10240|mimes:jpg,jpeg,png,pdf,doc,docx,txt,mp4,mp3',
-            'evidence_links' => 'nullable|string|max:500',
+            'evidence_links' => 'nullable|url|max:500',
             'terms' => 'required|accepted',
-        ]);        try {
-            // Create the inquiry record
+        ]);
+
+        try {            // Create the inquiry record using your actual database table
             $inquiryId = DB::table('inquiry')->insertGetId([
                 'title' => $validated['news_title'],
                 'description' => $validated['detailed_info'],
-                'evidenceUrl' => $validated['evidence_links'] ?? null,
-                'userId' => session('user_id', 1), // Default to 1 for testing
-                'final_status' => null,
-                'submission_date' => now()->toDateString(),
+                'userId' => session('user_id', 1), // Using userId to match your DB
+                'final_status' => 'Under Investigation', // Set initial status
+                'submission_date' => now()->toDateString(), // date format for your DB
+                'evidenceUrl' => $validated['evidence_links'] ?? null, // Store evidence links
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
-            // Handle file uploads
+            // Handle file uploads - store file paths in evidenceFileUrl
             if ($request->hasFile('evidence_files')) {
+                $filePaths = [];
                 foreach ($request->file('evidence_files') as $file) {
                     if ($file->isValid()) {
                         // Generate unique filename
@@ -51,47 +51,59 @@ class InquiryController extends Controller
                         
                         // Store file in public/evidence directory
                         $path = $file->storeAs('evidence', $filename, 'public');
-                        
-                        // Update inquiry with first file path
-                        if (!DB::table('inquiry')->where('inquiryId', $inquiryId)->value('evidenceFileUrl')) {
-                            DB::table('inquiry')
-                                ->where('inquiryId', $inquiryId)
-                                ->update(['evidenceFileUrl' => $path]);
-                        }
+                        $filePaths[] = $path;
                     }
                 }
+                
+                // Update inquiry with evidence file paths (comma-separated)
+                DB::table('inquiry')
+                    ->where('inquiryId', $inquiryId)
+                    ->update([
+                        'evidenceFileUrl' => implode(',', $filePaths),
+                        'updated_at' => now()
+                    ]);
             }
 
-            // Automatically create assignment (for testing purposes)
-            DB::table('inquiry_assignment')->insert([
-                'inquiry_id' => $inquiryId,
-                'assigned_to' => 1, // Default agency staff ID
-                'assigned_date' => now(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            // Try to create assignment record
+            try {
+                DB::table('inquiryassignment')->insert([
+                    'inquiryId' => $inquiryId,
+                    'agencyId' => 1, // Default agency ID
+                    'comments' => 'New inquiry submitted and assigned for investigation',
+                    'isRejected' => 0,
+                    'rejectedReason' => null,
+                    'mcmcId' => 1, // Default MCMC ID
+                ]);
+            } catch (\Exception $e) {
+                // Assignment table might not exist, continue without it
+            }
 
-            // Create status history entry
-            DB::table('inquiry_status_history')->insert([
-                'inquiry_id' => $inquiryId,
-                'status' => 'pending',
-                'changed_by' => session('user_id', 1),
-                'changed_date' => now(),
-                'comments' => 'Inquiry submitted by user',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            // Try to create initial status history entry
+            try {
+                DB::table('inquirystatushistory')->insert([
+                    'inquiryId' => $inquiryId,
+                    'agencyId' => 1, // Default agency ID
+                    'status' => 'Under Investigation',
+                    'status_comment' => 'Your news verification request has been received and is now under investigation by our team',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } catch (\Exception $e) {
+                // Status history table might not exist, continue without it
+            }
 
             // Redirect to success page
             return redirect()->route('inquiry.success')->with([
                 'inquiry_id' => $inquiryId,
                 'title' => $validated['news_title']
-            ]);
-
-        } catch (\Exception $e) {
-            // Handle errors
-            return back()->withErrors(['error' => 'Failed to submit inquiry. Please try again.'])
-                        ->withInput();
+            ]);        } catch (\Exception $e) {
+            // Log the error for debugging
+            \Log::error('Error storing inquiry: ' . $e->getMessage());
+            
+            // Return with error message instead of fake success
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['database' => 'Unable to submit inquiry. Please try again later.']);
         }
     }
 
@@ -106,200 +118,499 @@ class InquiryController extends Controller
 
         return view('module2.inquiry.UserInquirySuccess');
     }    /**
-     * Display user's inquiry history with sample data
-     */
-    public function index()
+     * Display user's inquiry history from database
+     */    public function index()
     {
         $userId = session('user_id', 1); // Default to 1 for testing
-          // For demonstration, create fake sample data with only completed and rejected statuses
-        $inquiries = collect([
-            (object)[
-                'id' => 1,
-                'title' => 'COVID-19 Vaccine Side Effects Claim',
-                'description' => 'Saw a post claiming vaccines cause magnetism. Need verification.',
-                'status' => 'completed',
-                'submission_date' => '2024-12-01 10:30:00',
-                'created_at' => '2024-12-01 10:30:00',
-                'result' => 'false',
-                'admin_response' => 'This claim has been thoroughly debunked by multiple health organizations. Vaccines do not cause magnetism.'
-            ],
-            (object)[
-                'id' => 2, 
-                'title' => 'Local Election Results Manipulation',
-                'description' => 'WhatsApp message claiming vote counting was rigged in my district.',
-                'status' => 'completed',
-                'submission_date' => '2024-12-05 14:15:00',
-                'created_at' => '2024-12-05 14:15:00',
-                'result' => 'true',
-                'admin_response' => 'Investigation confirmed irregularities in vote counting process. Matter has been reported to authorities.'
-            ],
-            (object)[
-                'id' => 3,
-                'title' => 'Miracle Weight Loss Drug Discovery',
-                'description' => 'Facebook ad promoting new pill that melts fat overnight.',
-                'status' => 'rejected',
-                'submission_date' => '2024-12-08 09:45:00',
-                'created_at' => '2024-12-08 09:45:00',
-                'result' => null,
-                'admin_response' => 'Insufficient evidence provided. Please submit screenshots of the actual advertisement and source links.'
-            ],
-            (object)[
-                'id' => 4,
-                'title' => 'Celebrity Death Hoax on Social Media',
-                'description' => 'Multiple posts claiming famous actor died in car accident.',
-                'status' => 'completed',
-                'submission_date' => '2024-12-10 16:20:00',
-                'created_at' => '2024-12-10 16:20:00',
-                'result' => 'false',
-                'admin_response' => 'This is a death hoax. The celebrity is alive and well, confirmed by official representatives.'
-            ],
-            (object)[
-                'id' => 5,
-                'title' => 'Government Policy Change Rumor',
-                'description' => 'Telegram message about new tax increase starting next month.',
-                'status' => 'completed',
-                'submission_date' => '2024-12-12 11:10:00',
-                'created_at' => '2024-12-12 11:10:00',
-                'result' => 'false',
-                'admin_response' => 'No official announcement has been made regarding tax increases. This appears to be misinformation.'
-            ],
-            (object)[
-                'id' => 6,
-                'title' => 'Natural Disaster Prediction Post',
-                'description' => 'TikTok video predicting earthquake in KL this week.',
-                'status' => 'rejected',
-                'submission_date' => '2024-12-13 08:30:00',
-                'created_at' => '2024-12-13 08:30:00',
-                'result' => null,
-                'admin_response' => 'Unable to verify due to lack of credible evidence sources. Please provide links to the original content.'
-            ]
-        ]);
+        
+        // Debug: Let's see what userId we're using
+        \Log::info('UserInquiryList - Current userId: ' . $userId);
+        
+        // TEMP DEBUG: Check if we have any inquiries at all in the database
+        try {
+            $totalInquiries = DB::table('inquiry')->count();
+            \Log::info('Total inquiries in database: ' . $totalInquiries);
+            
+            $userInquiries = DB::table('inquiry')->where('userId', $userId)->count();
+            \Log::info('Inquiries for user ' . $userId . ': ' . $userInquiries);
+            
+            // If no inquiries for this user, show all inquiries for testing
+            if ($userInquiries == 0) {
+                \Log::info('No inquiries for user ' . $userId . ', showing all inquiries for testing');
+                $testInquiries = DB::table('inquiry')->limit(5)->get();
+                \Log::info('Sample inquiries: ' . json_encode($testInquiries));
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error checking database: ' . $e->getMessage());
+        }
 
-        return view('module2.inquiry.UserInquiryList', compact('inquiries'));
+        try {// Fetch user's inquiries from database with assignments and status history
+            $inquiries = DB::table('inquiry as i')
+                ->leftJoin('inquiryassignment as ia', 'i.inquiryId', '=', 'ia.inquiryId')
+                ->where('i.userId', $userId) // Filter by user ID
+                ->select(
+                    'i.inquiryId as id',
+                    'i.title',
+                    'i.description',
+                    'i.final_status',
+                    'i.submission_date',
+                    'i.evidenceFileUrl',
+                    'i.evidenceUrl', // Add evidence links
+                    'i.created_at',
+                    'ia.comments as admin_response',
+                    'ia.isRejected',
+                    'ia.rejectedReason'
+                )
+                ->orderBy('i.created_at', 'desc')
+                ->get()
+                ->map(function ($inquiry) {
+                    // Map database status to display status
+                    $status = 'under_investigation';
+                    $result = null;
+                    
+                    if ($inquiry->final_status) {
+                        switch ($inquiry->final_status) {
+                            case 'True':
+                                $status = 'completed';
+                                $result = 'true';
+                                break;
+                            case 'Fake':
+                                $status = 'completed';
+                                $result = 'false';
+                                break;
+                            case 'Rejected':
+                                $status = 'rejected';
+                                $result = null;
+                                break;
+                            default:
+                                $status = 'under_investigation';
+                                break;
+                        }
+                    }
+
+                    // Process evidence files
+                    $evidence_files = [];
+                    if ($inquiry->evidenceFileUrl) {
+                        $filePaths = explode(',', $inquiry->evidenceFileUrl);
+                        foreach ($filePaths as $filePath) {
+                            if (trim($filePath)) {
+                                $fileName = basename(trim($filePath));
+                                $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+                                $fileSize = 'Unknown';
+                                
+                                // Try to get actual file size
+                                $fullPath = storage_path('app/public/' . trim($filePath));
+                                if (file_exists($fullPath)) {
+                                    $sizeBytes = filesize($fullPath);
+                                    $fileSize = $this->formatFileSize($sizeBytes);
+                                }
+                                
+                                $evidence_files[] = [
+                                    'name' => $fileName,
+                                    'type' => $this->getFileType($extension),
+                                    'size' => $fileSize
+                                ];
+                            }
+                        }
+                    }
+
+                    // Get status history for this inquiry
+                    $status_history = [];
+                    try {
+                        $status_history = DB::table('inquirystatushistory')
+                            ->where('inquiryId', $inquiry->id)
+                            ->select('status', 'status_comment', 'created_at')
+                            ->orderBy('created_at', 'asc')
+                            ->get()
+                            ->map(function ($history) {
+                                return [
+                                    'status' => strtolower(str_replace(' ', '_', $history->status)),
+                                    'date' => $history->created_at ?? now(),
+                                    'description' => $history->status_comment ?? $this->getStatusDescription($history->status)
+                                ];
+                            })
+                            ->toArray();
+                    } catch (\Exception $e) {
+                        // If status history table doesn't exist, create default entry
+                        $status_history = [
+                            [
+                                'status' => 'under_investigation',
+                                'date' => $inquiry->created_at ?? $inquiry->submission_date,
+                                'description' => 'Your news verification request was received and is under investigation'
+                            ]
+                        ];
+                    }
+
+                    // If no status history exists, create default entry
+                    if (empty($status_history)) {
+                        $status_history = [
+                            [
+                                'status' => 'under_investigation',
+                                'date' => $inquiry->created_at ?? $inquiry->submission_date,
+                                'description' => 'Your news verification request was received and is under investigation'
+                            ]
+                        ];
+                    }                    return (object)[
+                        'id' => $inquiry->id,
+                        'title' => $inquiry->title,
+                        'description' => $inquiry->description,
+                        'status' => $status,
+                        'submission_date' => $inquiry->submission_date,
+                        'created_at' => $inquiry->created_at,
+                        'result' => $result,
+                        'admin_response' => $inquiry->admin_response ?? ($inquiry->isRejected ? $inquiry->rejectedReason : null),
+                        'evidence_files' => $evidence_files,
+                        'evidence_url' => $inquiry->evidenceUrl, // Add evidence links
+                        'status_history' => $status_history
+                    ];
+                });        } catch (\Exception $e) {
+            // Log the exception for debugging
+            \Log::error('Error fetching inquiries: ' . $e->getMessage());
+            
+            // Return empty collection instead of sample data
+            $inquiries = collect([]);
+        }
+
+        // Debug: Log how many inquiries we found
+        \Log::info('UserInquiryList - Found ' . $inquiries->count() . ' inquiries');
+        
+        // Convert to array for proper JSON serialization in view
+        $inquiriesForJs = $inquiries->values()->toArray();
+        \Log::info('UserInquiryList - Converted to array with ' . count($inquiriesForJs) . ' items');
+        
+        // Pass the collection for @if checks in view, but also pass array for JS
+        return view('module2.inquiry.UserInquiryList', [
+            'inquiries' => $inquiries,
+            'inquiriesForJs' => $inquiriesForJs
+        ]);
     }
 
     /**
-     * Display public inquiries with anonymized user data
+     * Helper function to format file size
+     */
+    private function formatFileSize($bytes)
+    {
+        if ($bytes >= 1073741824) {
+            $bytes = number_format($bytes / 1073741824, 2) . ' GB';
+        } elseif ($bytes >= 1048576) {
+            $bytes = number_format($bytes / 1048576, 2) . ' MB';
+        } elseif ($bytes >= 1024) {
+            $bytes = number_format($bytes / 1024, 2) . ' KB';
+        } elseif ($bytes > 1) {
+            $bytes = $bytes . ' bytes';
+        } elseif ($bytes == 1) {
+            $bytes = $bytes . ' byte';
+        } else {
+            $bytes = '0 bytes';
+        }
+        return $bytes;
+    }
+
+    /**
+     * Helper function to get file type from extension
+     */
+    private function getFileType($extension)
+    {
+        $extension = strtolower($extension);
+        $imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+        $documentTypes = ['pdf', 'doc', 'docx', 'txt'];
+        $videoTypes = ['mp4', 'avi', 'mov', 'wmv'];
+        $audioTypes = ['mp3', 'wav', 'aac'];
+        
+        if (in_array($extension, $imageTypes)) {
+            return 'image';
+        } elseif (in_array($extension, $documentTypes)) {
+            return 'document';
+        } elseif (in_array($extension, $videoTypes)) {
+            return 'video';
+        } elseif (in_array($extension, $audioTypes)) {
+            return 'audio';
+        } else {
+            return 'file';
+        }
+    }
+
+    /**
+     * Helper function to get status description
+     */
+    private function getStatusDescription($status)
+    {
+        switch ($status) {
+            case 'Under Investigation':
+                return 'Your news verification request is currently under investigation';
+            case 'True':
+                return 'The information has been verified as accurate';
+            case 'Fake':
+                return 'The information has been identified as false or misleading';
+            case 'Rejected':
+                return 'Unable to verify due to insufficient evidence or unclear information';
+            default:
+                return 'Status updated';
+        }
+    }    /**
+     * Display public inquiries with anonymized user data from database
+     * Following MVC pattern: Controller handles business logic, View handles presentation
      */
     public function publicInquiries()
     {
-        // For demonstration, create fake public inquiry data with anonymized information
-        // In real implementation, this would query the database with proper anonymization
-        $publicInquiries = collect([
-            (object)[
-                'id' => 101,
-                'title' => 'Vaccine Misinformation on Social Media',
-                'description' => 'Claims about COVID-19 vaccines causing severe side effects spreading on Facebook.',
-                'status' => 'completed',
-                'submission_date' => '2024-12-01 10:30:00',
-                'completion_date' => '2024-12-03 14:20:00',
-                'result' => 'false',
-                'category' => 'Health',
-                'source_platform' => 'Facebook',
-                'admin_response' => 'This claim has been thoroughly investigated and found to be misleading. Current scientific evidence shows vaccines are safe and effective.',
-                'anonymized_user' => 'User***A1',
-                'evidence_count' => 3
-            ],
-            (object)[
-                'id' => 102,
-                'title' => 'Election Results Manipulation Claims',
-                'description' => 'Allegations of vote tampering in recent local elections circulating via WhatsApp.',
-                'status' => 'completed',
-                'submission_date' => '2024-12-05 14:15:00',
-                'completion_date' => '2024-12-07 09:45:00',
-                'result' => 'true',
-                'category' => 'Politics',
-                'source_platform' => 'WhatsApp',
-                'admin_response' => 'Investigation confirmed irregularities in the counting process. Authorities have been notified and corrective measures implemented.',
-                'anonymized_user' => 'User***B2',
-                'evidence_count' => 5
-            ],
-            (object)[
-                'id' => 103,
-                'title' => 'Celebrity Death Hoax Spreading Online',
-                'description' => 'False reports of a famous actor dying in a car accident being shared widely.',
-                'status' => 'completed',
-                'submission_date' => '2024-12-10 16:20:00',
-                'completion_date' => '2024-12-11 11:30:00',
-                'result' => 'false',
-                'category' => 'Entertainment',
-                'source_platform' => 'Twitter',
-                'admin_response' => 'This is confirmed to be a death hoax. The celebrity is alive and well, as confirmed by official representatives.',
-                'anonymized_user' => 'User***C3',
-                'evidence_count' => 2
-            ],
-            (object)[
-                'id' => 104,
-                'title' => 'Fake Investment Opportunity Advertisement',
-                'description' => 'Suspicious investment scheme promising unrealistic returns being promoted online.',
-                'status' => 'completed',
-                'submission_date' => '2024-12-08 09:45:00',
-                'completion_date' => '2024-12-09 16:15:00',
-                'result' => 'false',
-                'category' => 'Finance',
-                'source_platform' => 'Instagram',
-                'admin_response' => 'This is a fraudulent investment scheme. The company is not registered and the promised returns are unrealistic.',
-                'anonymized_user' => 'User***D4',
-                'evidence_count' => 4
-            ],
-            (object)[
-                'id' => 105,
-                'title' => 'Natural Disaster Warning Message',
-                'description' => 'Unverified earthquake prediction warning circulating on messaging apps.',
-                'status' => 'completed',
-                'submission_date' => '2024-12-12 11:10:00',
-                'completion_date' => '2024-12-13 13:25:00',
-                'result' => 'false',
-                'category' => 'Safety',
-                'source_platform' => 'Telegram',
-                'admin_response' => 'No credible scientific basis for this prediction. Official meteorological agencies have not issued any such warnings.',
-                'anonymized_user' => 'User***E5',
-                'evidence_count' => 1
-            ],
-            (object)[
-                'id' => 106,
-                'title' => 'Government Policy Misinformation',
-                'description' => 'False claims about new government regulations affecting small businesses.',
-                'status' => 'completed',
-                'submission_date' => '2024-12-06 08:30:00',
-                'completion_date' => '2024-12-08 15:20:00',
-                'result' => 'false',
-                'category' => 'Government',
-                'source_platform' => 'Facebook',
-                'admin_response' => 'These claims are inaccurate. No such regulations have been proposed or implemented by the government.',
-                'anonymized_user' => 'User***F6',
-                'evidence_count' => 3
-            ],
-            (object)[
-                'id' => 107,
-                'title' => 'Product Safety Alert Verification',
-                'description' => 'Warning about contaminated food products needs verification.',
-                'status' => 'completed',
-                'submission_date' => '2024-12-04 13:45:00',
-                'completion_date' => '2024-12-05 10:30:00',
-                'result' => 'true',
-                'category' => 'Health',
-                'source_platform' => 'WhatsApp',
-                'admin_response' => 'Confirmed by health authorities. Product recall has been issued and consumers advised to check batch numbers.',
-                'anonymized_user' => 'User***G7',
-                'evidence_count' => 6
-            ],
-            (object)[
-                'id' => 108,
-                'title' => 'Technology Security Threat Warning',
-                'description' => 'Claims about new malware targeting banking apps.',
-                'status' => 'completed',
-                'submission_date' => '2024-12-09 17:15:00',
-                'completion_date' => '2024-12-11 14:50:00',
-                'result' => 'true',
-                'category' => 'Technology',
-                'source_platform' => 'LinkedIn',
-                'admin_response' => 'Cybersecurity experts have confirmed this threat. Users are advised to update their banking apps and enable two-factor authentication.',
-                'anonymized_user' => 'User***H8',
-                'evidence_count' => 7
-            ]
-        ]);
+        // Debug: Log method entry
+        \Log::info('PublicInquiries method called');
         
+        try {
+            // Debug: Test database connection
+            $dbTest = DB::select('SELECT 1 as test');
+            \Log::info('Database connection successful: ' . json_encode($dbTest));
+            
+            // Fetch only completed inquiries (True/Fake status) from database
+            $rawInquiries = DB::table('inquiry as i')
+                ->leftJoin('inquiryassignment as ia', 'i.inquiryId', '=', 'ia.inquiryId')
+                ->leftJoin('publicuser as u', 'i.userId', '=', 'u.userId')
+                ->whereIn('i.final_status', ['True', 'Fake']) // Only show completed investigations
+                ->select(
+                    'i.inquiryId as id',
+                    'i.title',
+                    'i.description',
+                    'i.final_status',
+                    'i.submission_date',
+                    'i.evidenceFileUrl',
+                    'i.evidenceUrl',
+                    'i.created_at',
+                    'i.updated_at',
+                    'ia.comments as admin_response',
+                    'u.userUsername as username'
+                )
+                ->orderBy('i.updated_at', 'desc')
+                ->get();
+
+            \Log::info('Raw inquiries count: ' . $rawInquiries->count());
+
+            // Process the raw data into a proper format for the view
+            $publicInquiries = $rawInquiries->map(function ($inquiry) {
+                // Process evidence files
+                $evidence_files = $this->processEvidenceFiles($inquiry->evidenceFileUrl);
+                
+                // Anonymize username for public display
+                $anonymized_user = $this->anonymizeUsername($inquiry->username);
+                
+                // Prepare clean data object for view
+                return (object)[
+                    'id' => $inquiry->id,
+                    'title' => $inquiry->title,
+                    'description' => $inquiry->description,
+                    'status' => 'completed', // All public inquiries are completed
+                    'submission_date' => $inquiry->submission_date,
+                    'completion_date' => $inquiry->updated_at ?? $inquiry->created_at,
+                    'result' => $this->mapFinalStatusToResult($inquiry->final_status),
+                    'admin_response' => $inquiry->admin_response ?? $this->getDefaultResponse($inquiry->final_status),
+                    'anonymized_user' => $anonymized_user,
+                    'evidence_count' => count($evidence_files),
+                    'evidence_files' => $evidence_files,
+                    'evidence_url' => $inquiry->evidenceUrl // Include evidence links
+                ];
+            });
+
+            // Log for debugging
+            \Log::info('Public Inquiries - Found ' . $publicInquiries->count() . ' completed inquiries');
+
+        } catch (\Exception $e) {
+            // Log the exception for debugging
+            \Log::error('Error fetching public inquiries: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            // Return empty collection - no sample data
+            $publicInquiries = collect([]);
+        }
+
+        // Debug: Log before view return
+        \Log::info('Returning view with ' . $publicInquiries->count() . ' inquiries');
+
+        // Return view with data (MVC pattern)
         return view('module2.inquiry.PublicInquiriesList', compact('publicInquiries'));
+    }
+
+    /**
+     * Process evidence files from database string
+     * Helper method following MVC separation of concerns
+     */
+    private function processEvidenceFiles($evidenceFileUrl)
+    {
+        $evidence_files = [];
+        
+        if ($evidenceFileUrl) {
+            $filePaths = explode(',', $evidenceFileUrl);
+            foreach ($filePaths as $filePath) {
+                $filePath = trim($filePath);
+                if (!empty($filePath)) {
+                    $fileName = basename($filePath);
+                    $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+                    
+                    // Get real file size
+                    $fileSize = 'Unknown';
+                    $fullPath = storage_path('app/public/' . $filePath);
+                    if (file_exists($fullPath)) {
+                        $sizeBytes = filesize($fullPath);
+                        $fileSize = $this->formatFileSize($sizeBytes);
+                    }
+                    
+                    $evidence_files[] = [
+                        'name' => $fileName,
+                        'type' => $this->getFileType($extension),
+                        'size' => $fileSize,
+                        'url' => asset('storage/' . $filePath),
+                        'exists' => file_exists($fullPath)
+                    ];
+                }
+            }
+        }
+        
+        return $evidence_files;
+    }
+
+    /**
+     * Anonymize username for public display
+     * Following privacy best practices
+     */
+    private function anonymizeUsername($username)
+    {
+        if (!$username) {
+            return 'Anonymous User';
+        }
+        
+        // Create consistent anonymized identifier
+        $hash = substr(md5($username), 0, 4);
+        return 'User***' . strtoupper($hash);
+    }
+
+    /**
+     * Map database final_status to view result format
+     */
+    private function mapFinalStatusToResult($finalStatus)
+    {
+        return $finalStatus === 'True' ? 'true' : 'false';
+    }
+
+    /**
+     * Helper function to get default admin response based on status
+     */
+    private function getDefaultResponse($status)
+    {
+        switch ($status) {
+            case 'True':
+                return 'This information has been verified and confirmed as accurate.';
+            case 'Fake':
+                return 'This information has been investigated and found to be false or misleading.';
+            default:
+                return 'Investigation completed.';
+        }
+    }
+
+    /**
+     * Test method to verify controller accessibility
+     */
+    public function testPublicInquiries()
+    {
+        return response()->json([
+            'status' => 'success',
+            'message' => 'InquiryController is accessible',
+            'timestamp' => now()
+        ]);
+    }
+
+    /**
+     * Download or view evidence file
+     */
+    public function getEvidenceFile($inquiryId, $filename)
+    {
+        try {
+            // Get the inquiry and verify user ownership
+            $userId = session('user_id', 1);
+            $inquiry = DB::table('inquiry')
+                ->where('inquiryId', $inquiryId)
+                ->where('userId', $userId) // Ensure user can only access their own files
+                ->first();
+
+            if (!$inquiry) {
+                abort(404, 'Inquiry not found or access denied');
+            }
+
+            // Check if the file exists in the inquiry's evidence files
+            $evidenceFiles = explode(',', $inquiry->evidenceFileUrl);
+            $requestedFile = null;
+            
+            foreach ($evidenceFiles as $filePath) {
+                $filePath = trim($filePath);
+                if (basename($filePath) === $filename) {
+                    $requestedFile = $filePath;
+                    break;
+                }
+            }
+
+            if (!$requestedFile) {
+                abort(404, 'Evidence file not found');
+            }
+
+            // Build the full file path
+            $fullPath = storage_path('app/public/' . $requestedFile);
+
+            if (!file_exists($fullPath)) {
+                abort(404, 'Evidence file does not exist');
+            }
+
+            // Return the file
+            return response()->file($fullPath);
+
+        } catch (\Exception $e) {
+            \Log::error('Error accessing evidence file: ' . $e->getMessage());
+            abort(500, 'Unable to access evidence file');
+        }
+    }
+
+    /**
+     * Serve evidence file for user's own inquiry
+     */
+    public function viewEvidenceFile($inquiryId, $filename)
+    {
+        try {
+            $userId = session('user_id', 1);
+            
+            // Get the inquiry and verify user ownership
+            $inquiry = DB::table('inquiry')
+                ->where('inquiryId', $inquiryId)
+                ->where('userId', $userId)
+                ->first();
+
+            if (!$inquiry || !$inquiry->evidenceFileUrl) {
+                abort(404, 'Evidence file not found');
+            }
+
+            // Check if the requested file exists in the inquiry's evidence files
+            $evidenceFiles = explode(',', $inquiry->evidenceFileUrl);
+            $targetFile = null;
+            
+            foreach ($evidenceFiles as $filePath) {
+                $filePath = trim($filePath);
+                if (basename($filePath) === $filename) {
+                    $targetFile = $filePath;
+                    break;
+                }
+            }
+
+            if (!$targetFile) {
+                abort(404, 'File not found in inquiry evidence');
+            }
+
+            $fullPath = storage_path('app/public/' . $targetFile);
+            
+            if (!file_exists($fullPath)) {
+                abort(404, 'Evidence file does not exist on server');
+            }
+
+            // Return the file
+            return response()->file($fullPath);
+
+        } catch (\Exception $e) {
+            \Log::error('Error viewing evidence file: ' . $e->getMessage());
+            abort(500, 'Unable to access evidence file');
+        }
     }
 }

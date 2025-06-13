@@ -219,7 +219,6 @@
             <a href="{{ route('module3.status') }}">Dashboard</a>
         </div>
         <div class="nav-divider">INQUIRY MANAGEMENT</div>
-        <!-- Submit New Inquiry -->
         
         <!-- My Inquiries -->
         <div class="nav-item">
