@@ -9,15 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('agency', function (Blueprint $table) {
-            $table->id('agencyId');
+            $table->increments('agencyId');
             $table->string('agency_name', 50);
-            $table->string('agencyPassword', 15);
-            $table->foreignId('mcmcId')->nullable()->constrained('mcmc', 'mcmcId')->onDelete('set null');
-            $table->timestamps();
+            $table->string('agencyPassword', 255);
+            $table->integer('mcmcId')->unsigned()->nullable();
             $table->string('agencyUsername', 20)->nullable();
+            $table->timestamps();
 
-            // Add foreign key constraint
-            $table->foreign('mcmcId')->references('mcmcId')->on('mcmc');
+            $table->foreign('mcmcId')->references('mcmcId')->on('mcmcstaff');
         });
     }
 
