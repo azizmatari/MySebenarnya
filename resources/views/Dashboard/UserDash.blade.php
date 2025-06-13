@@ -1,21 +1,6 @@
-@extends('layouts.layoutWrapper')
+@include('layouts.sidebarPublic')
 
-@section('title', 'Dashboard')
-
-@section('content')
-    <h1 class="dashboard-heading">Welcome to the User Dashboard</h1>
-    <p>This is where the latest news and updates will appear.</p>
-
-    <div class="event-grid">
-        @for ($i = 1; $i <= 6; $i++)
-            <div class="event-card">
-                
-                <h3>Event Title {{ $i }}</h3>
-            </div>
-        @endfor
-    </div>
-
-    <a href="#" class="btn-view-more">View More Events</a>
-@endsection
-
-
+<div class="dashboard-content">
+    <h1>Welcome to the Public User Dashboard</h1>
+    {{-- Add more dashboard content here --}}
+</div>
