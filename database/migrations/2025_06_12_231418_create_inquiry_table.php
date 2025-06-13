@@ -9,20 +9,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('inquiry', function (Blueprint $table) {
-            $table->id('inquiryId');
-            $table->unsignedBigInteger('userId');
+            $table->increments('inquiryId');
+            $table->integer('userId')->unsigned();
             $table->string('title', 30);
             $table->text('description');
-            $table->enum('final_status', ['Under Investigation', 'True', 'Fake', 'Rejected'])->nullable();
+            $table->enum('final_status', ['Under Investigation','True','Fake','Rejected'])->nullable();
             $table->date('submission_date');
             $table->string('evidenceUrl', 150)->nullable();
             $table->string('evidenceFileUrl', 150)->nullable();
             $table->timestamps();
-            $table->string('evidenceUrl', 150)->nullable();
-            $table->string('evidenceFileUrl', 150)->nullable();
 
-            // Add indexes for better performance
-            $table->index('userId', 'idx_inquiry_user');
+            $table->foreign('userId')->references('userId')->on('publicuser');
         });
     }
 

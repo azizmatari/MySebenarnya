@@ -9,13 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('inquirystatushistory', function (Blueprint $table) {
-            $table->id('status_id');
-            $table->unsignedBigInteger('inquiryId');
-            $table->unsignedBigInteger('agencyId');
-            $table->enum('status', ['Under Investigation', 'True', 'Fake', 'Rejected']);
+            $table->increments('status_id');
+            $table->integer('inquiryId')->unsigned();
+            $table->integer('agencyId')->unsigned();
+            $table->enum('status', ['Under Investigation','True','Fake','Rejected']);
             $table->text('status_comment')->nullable();
 
-            // Add foreign key constraints
             $table->foreign('inquiryId')->references('inquiryId')->on('inquiry');
             $table->foreign('agencyId')->references('agencyId')->on('agency');
         });
