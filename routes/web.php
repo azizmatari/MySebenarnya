@@ -6,6 +6,7 @@ use App\Http\Controllers\module1\UserProfileController;
 use App\Http\Controllers\module1\UserAuthController;
 use App\Http\Controllers\module3\StatusController;
 use App\Http\Controllers\module2\InquiryController;
+use App\Http\Controllers\module1\RegisterAgencyController;
 
 // ==================
 // Dashboard Routes
@@ -33,6 +34,11 @@ Route::get('/register', function () {
 })->name('register.view');
 Route::post('/register', [UserAuthController::class, 'registerPublic'])->name('register.submit');
 
+// Show the Register Agency form
+Route::get('/register-agency', [App\Http\Controllers\module1\RegisterAgencyController::class, 'showRegisterForm'])->name('register.agency.view');
+// Handle the Register Agency POST
+Route::post('/register-agency', [App\Http\Controllers\module1\RegisterAgencyController::class, 'register'])->name('register.agency.submit');
+
 // Login (All Users)
 Route::get('/login', function () {
     return view('module1.UserLoginView');
@@ -55,6 +61,7 @@ Route::get('/forgot-password', function () {
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
 
 
 //END Of module 1 routes

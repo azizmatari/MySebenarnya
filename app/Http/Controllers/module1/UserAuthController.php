@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Http\Controllers\module1;
 
 use App\Http\Controllers\Controller;
@@ -63,13 +62,24 @@ class UserAuthController extends Controller
                 'password' => 'required|string'
             ]);
             $user = MCMC_Staff::where('mcmcUsername', $request->userUsername)->first();
+
+            // Debug logging for MCMC staff login
+            \Log::info('--- MCMC Staff Login Attempt ---');
+            \Log::info('Username entered: ' . $request->userUsername);
+            \Log::info('Password entered: ' . $request->password);
+            \Log::info('User found: ' . ($user ? 'YES' : 'NO'));
+            \Log::info('Password in DB: ' . ($user ? $user->mcmcPassword : 'NO USER'));
+
             if ($user && Hash::check($request->password, $user->mcmcPassword)) {
                 session([
                     'user_id' => $user->mcmcId,
                     'username' => $user->mcmcName,
                     'role' => 'mcmc'
                 ]);
+                \Log::info('MCMC login success!');
                 return redirect()->route('mcmc.dashboard');
+            } else {
+                \Log::info('MCMC login failed: Invalid credentials or password mismatch.');
             }
         } else if ($request->role === 'agency') {
             // For Agency: find by username

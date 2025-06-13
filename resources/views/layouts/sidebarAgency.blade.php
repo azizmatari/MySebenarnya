@@ -243,8 +243,11 @@ h2 {
       <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=John" alt="Profile" class="profile-img" />
     </button>
     <div class="dropdown-content" id="profileDropdown">
-      <a href="profile.html"><i class="material-icons">person</i> My Profile</a>
-      <a href="../module1/logout.php"><i class="material-icons">exit_to_app</i> Logout</a>
+        <a href="profile.html"><i class="material-icons">person</i> My Profile</a>
+        <a href="{{ route('logout') }}"onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="material-icons">exit_to_app</i> Logout</a>
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+            @csrf
+        </form>
     </div>
   </div>
 </div>
