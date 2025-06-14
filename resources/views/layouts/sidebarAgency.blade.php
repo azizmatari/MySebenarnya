@@ -1,283 +1,293 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
 <style>
-
-
     * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-body {
-    margin: 0;
-    display: flex;
-    height: 100vh;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    overflow: hidden;
-
-}
-
-.h11 {
-    width: 100%;
-    padding: 20px;
-    text-align: center;
-}
-
-/* Sidebar styles */
-.sidebar {
-    width: 220px;
-    background-color: #1e1e2d;
-    color: #a2a3b7;
-    height: 100vh;
-    overflow-y: auto;
-    transition: all 0.3s ease;
-}
-
-.sidebar-header {
-    padding: 20px;
-    display: flex;
-    align-items: center;
-}
-
-.sidebar-header img {
-    height: 28px;
-    margin-right: 10px;
-}
-
-.sidebar-header h1 {
-    color: #fff;
-    font-size: 20px;
-    font-weight: 600;
-}
-
-.sidebar-nav {
-    padding: 10px 0;
-}
-
-.nav-item {
-    padding: 30px 20px;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-}
-
-.nav-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #fff;
-}
-
-.nav-item.active {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    border-left: 3px solid #7367f0;
-}
-
-.nav-item i {
-    margin-right: 12px;
-    font-size: 16px;
-    width: 20px;
-    text-align: center;
-}
-
-.nav-item a {
-    text-decoration: none;
-    color: #cfd4e0; /* same as 'Forms' icon/text color */
-}
-
-/* Active link (highlighted) */
-.nav-item a.active {
-    color: #a259ff; /* purple color for active state */
-    font-weight: 600;
-}
-
-.nav-divider {
-    padding: 10px 20px;
-    font-size: 12px;
-    text-transform: uppercase;
-    font-weight: 600;
-    color: #565674;
-    margin-top: 10px;
-}
-
-
-/* Main content area */
-.main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    padding-top: 70px; /* This matches the height of the fixed top bar */
-    padding-left: 20px;
-    padding-right: 20px;
-}
-
-
-/* Top bar styles */
-.top-bar {
-      position: fixed;
-      top: 0;
-      left: 220px; /* width of sidebar */
-      right: 0;
-      height: 60px;
-      background-color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding: 0 20px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      z-index: 1000;
-      border-bottom: 1px solid #ebedf2;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-.profile-dropdown {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
+    }
 
-.user-type {
-    margin-right: 10px;
-    font-weight: 500;
-    font-size: 14px;
-    color: #6c757d;
-    background-color: #f5f5f5;
-    padding: 4px 8px;
-    border-radius: 4px;
-}
+    /* Sidebar styles - matching MyPetakom design */
+    .sidebar {
+        width: 250px;
+        background-color: #2c2c54;
+        color: #a2a3b7;
+        height: 100vh;
+        overflow-y: auto;
+        transition: all 0.3s ease;
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 1000;
+    }
 
-.profile-btn {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    border: none;
-    background: none;
-    padding: 0;
-}
+    .sidebar-header {
+        padding: 20px;
+        text-align: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
-.profile-img {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    object-fit: cover;
-    cursor: pointer;
-}
+    .sidebar-header h1 {
+        color: #fff;
+        font-size: 22px;
+        font-weight: 600;
+        margin: 0;
+    }
 
-.dropdown-content {
-    position: absolute;
-    right: 0;
-    top: 45px;
-    background-color: white;
-    min-width: 180px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    z-index: 1;
-    display: none;
-}
+    .sidebar-nav {
+        padding: 0;
+        margin-top: 20px;
+    }
 
-.dropdown-content a {
-    color: #333;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-    font-size: 14px;
-}
+    .nav-item {
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+        color: #a2a3b7;
+    }
 
-.dropdown-content a:hover {
-    background-color: #f5f5f5;
-}
+    .nav-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
 
-/* Show dropdown when active class is added */
-.show {
-    display: block;
-}
+    .nav-item.active {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border-right: 3px solid #007bff;
+    }
 
-/* Content area */
-.content {
-    padding: 20px;
-    flex: 1;
-}
+    .nav-item i {
+        margin-right: 15px;
+        font-size: 18px;
+        width: 24px;
+        text-align: center;
+    }
 
-.card {
-    background: white;
-    border-radius: 5px;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-    margin-bottom: 20px;
-}
+    .nav-item a {
+        text-decoration: none;
+        color: inherit;
+        font-size: 14px;
+        font-weight: 500;
+        flex: 1;
+    }
 
-h2 {
-    margin-bottom: 20px;
-    color: #333;
-}
+    .nav-divider {
+        padding: 15px 20px 10px;
+        font-size: 11px;
+        text-transform: uppercase;
+        font-weight: 600;
+        color: #6c757d;
+        letter-spacing: 1px;
+    }
 
+    /* Main content area */
+    .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        margin-left: 250px;
+        padding-top: 70px;
+    }
 
+    /* Top bar styles */
+    .top-bar {
+        position: fixed;
+        top: 0;
+        left: 250px;
+        right: 0;
+        height: 70px;
+        background-color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0 30px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        z-index: 999;
+        border-bottom: 1px solid #ebedf2;
+    }
+
+    .profile-dropdown {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .user-type {
+        margin-right: 15px;
+        font-weight: 600;
+        font-size: 12px;
+        color: #6c757d;
+        background-color: #f8f9fa;
+        padding: 6px 12px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .profile-btn {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        border: none;
+        background: none;
+        padding: 0;
+    }
+
+    .profile-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        cursor: pointer;
+        border: 2px solid #e9ecef;
+    }
+
+    .dropdown-content {
+        position: absolute;
+        right: 0;
+        top: 50px;
+        background-color: white;
+        min-width: 200px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        border-radius: 8px;
+        z-index: 1001;
+        display: none;
+        overflow: hidden;
+    }
+
+    .dropdown-content a {
+        color: #495057;
+        padding: 15px 20px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        transition: background-color 0.2s;
+    }
+
+    .dropdown-content a i {
+        margin-right: 10px;
+        font-size: 16px;
+    }
+
+    .dropdown-content a:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* Show dropdown when active class is added */
+    .show {
+        display: block;
+    }
+
+    /* Content area styling */
+    .content {
+        padding: 30px;
+        flex: 1;
+    }
+
+    .card {
+        background: white;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 25px;
+        border: 1px solid #e9ecef;
+    }
 </style>
-  
+
 <!-- This is now a partial template - only the sidebar content -->
 <div class="sidebar">
-  <div>
-    <h1 class="h11" style="text-align:center; padding:20px;">MySebrena</h1>
-  </div>
-  <div class="sidebar-nav">
-    <div class="nav-item"><i class="material-icons">dashboard</i><a href="../module4/dashboard.php">Dashboard</a></div>
-    <div class="nav-divider">COMPONENTS</div>
-    <!-- option 1 -->
-    <div class="nav-item"><i class="material-icons">list</i><a href="../module4/meritAwardedList.php">Merit Awarded List</a></div>
-    <!-- option 2 -->
-    <div class="nav-item"><i class="material-icons">assignment</i><a href="../module4/claimAward.php">Claim Merit Award</a></div>
-    <!-- option 3 -->
-     <div class="nav-item"><i class="material-icons">list</i><a href="../module2/viewEventInfo.php">View Event Info</a></div>
-    <!-- option 4 -->
-    <div class="nav-item">
-    <i class="material-icons">person</i>
-    <a href="{{ route('agency.profile') }}">My Profile</a>
+    <div class="sidebar-header">
+        <h1>MySebenarnya</h1>
+    </div>
+    <div class="sidebar-nav">
+        <div class="nav-item active">
+            <i class="material-icons">dashboard</i>
+            <a href=#>Dashboard</a>
+        </div>
+
+        
+
+        <div class="nav-divider">INQUIRY MANAGEMENT</div>
+        <!-- Submit New Inquiry -->
+        
+        <!-- My Inquiries -->
+        <div class="nav-item">
+            <i class="material-icons">list_alt</i>
+            <a href="{{ route('inquiry.history') }}">My Inquiries</a>
+        </div>
+        <!-- Public Inquiries -->
+        <div class="nav-item">
+            <i class="material-icons">public</i>
+            <a href="{{ route('inquiry.public') }}">Public Inquiries</a>
+        </div>
+        <div class="nav-divider">INFORMATION</div>
+        <!-- Inquiry History (placeholder) -->
+        <div class="nav-item">
+            <i class="material-icons">history</i>
+            <a href="#" style="color: #6c757d;">Activity History</a>
+        </div>
+         <!-- My Profile -->
+        <div class="nav-item">
+            <i class="material-icons">person</i>
+            <a href="{{ route('user.profile') }}">My Profile</a>
+        </div>
+    </div>
 </div>
-  </div>
-</div>
+
 
 <!-- Top Bar -->
 <div class="top-bar">
   <div class="profile-dropdown">
     <div class="user-type">
-      {{ session('username', 'AGENCY') }}
+      {{ session('username', 'USER') }}
     </div>
     <button class="profile-btn" onclick="toggleDropdown(event)">
-    @if(session('profile_picture'))
+      @if(session('profile_picture'))
         <img src="{{ asset('storage/' . session('profile_picture')) }}" alt="Profile" class="profile-img" />
-    @else
-        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Agency" alt="Profile" class="profile-img" />
-    @endif
+      @else
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=John" alt="Profile" class="profile-img" />
+      @endif
     </button>
     <div class="dropdown-content" id="profileDropdown">
-        <a href="{{ route('agency.profile') }}"><i class="material-icons">person</i> My Profile</a>
-        <a href="{{ route('logout') }}"
-        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-        <i class="material-icons">exit_to_app</i> Logout
-    </a>
-    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-        @csrf
-    </form>
+      <a href="{{ route('user.profile') }}"><i class="material-icons">person</i> My Profile</a>
+      <a href="{{ route('logout') }}"
+         onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+         <i class="material-icons">exit_to_app</i> Logout
+      </a>
+      <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+          @csrf
+      </form>
     </div>
-</div>
+  </div>
 </div>
 
- <!-- JS -->
-  <script>
+<!-- JS -->
+<script>
     function toggleDropdown(event) {
-      event.stopPropagation();
-      document.getElementById("profileDropdown").classList.toggle("show");
+        event.stopPropagation();
+        document.getElementById("profileDropdown").classList.toggle("show");
     }
 
-    window.onclick = function (event) {
-      if (!event.target.matches('.profile-btn') && !event.target.matches('.profile-img')) {
-        const dropdown = document.getElementById("profileDropdown");
-        if (dropdown.classList.contains("show")) {
-          dropdown.classList.remove("show");
+    window.onclick = function(event) {
+        if (!event.target.matches('.profile-btn') && !event.target.matches('.profile-img')) {
+            const dropdown = document.getElementById("profileDropdown");
+            if (dropdown.classList.contains("show")) {
+                dropdown.classList.remove("show");
+            }
         }
-      }
     };
-  </script>
+</script>

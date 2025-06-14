@@ -10,56 +10,51 @@
 
     body {
         margin: 0;
-        display: flex;
-        height: 100vh;
+        padding: 0;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        overflow: hidden;
+        background-color: #f8f9fa;
     }
 
-    .h11 {
-        width: 100%;
-        padding: 20px;
-        text-align: center;
-    }
-
-    /* Sidebar styles */
+    /* Sidebar styles - matching MyPetakom design */
     .sidebar {
-        width: 220px;
-        background-color: #1e1e2d;
+        width: 250px;
+        background-color: #2c2c54;
         color: #a2a3b7;
         height: 100vh;
         overflow-y: auto;
         transition: all 0.3s ease;
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 1000;
     }
 
     .sidebar-header {
         padding: 20px;
-        display: flex;
-        align-items: center;
-    }
-
-    .sidebar-header img {
-        height: 28px;
-        margin-right: 10px;
+        text-align: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .sidebar-header h1 {
         color: #fff;
-        font-size: 20px;
+        font-size: 22px;
         font-weight: 600;
+        margin: 0;
     }
 
     .sidebar-nav {
-        padding: 10px 0;
+        padding: 0;
+        margin-top: 20px;
     }
 
     .nav-item {
-        padding: 30px 20px;
+        padding: 15px 20px;
         display: flex;
         align-items: center;
         cursor: pointer;
         transition: all 0.2s;
         position: relative;
+        color: #a2a3b7;
     }
 
     .nav-item:hover {
@@ -70,34 +65,31 @@
     .nav-item.active {
         background-color: rgba(255, 255, 255, 0.1);
         color: #fff;
-        border-left: 3px solid #7367f0;
+        border-right: 3px solid #007bff;
     }
 
     .nav-item i {
-        margin-right: 12px;
-        font-size: 16px;
-        width: 20px;
+        margin-right: 15px;
+        font-size: 18px;
+        width: 24px;
         text-align: center;
     }
 
     .nav-item a {
         text-decoration: none;
-        color: #cfd4e0; /* same as 'Forms' icon/text color */
-    }
-
-    /* Active link (highlighted) */
-    .nav-item a.active {
-        color: #a259ff; /* purple color for active state */
-        font-weight: 600;
+        color: inherit;
+        font-size: 14px;
+        font-weight: 500;
+        flex: 1;
     }
 
     .nav-divider {
-        padding: 10px 20px;
-        font-size: 12px;
+        padding: 15px 20px 10px;
+        font-size: 11px;
         text-transform: uppercase;
         font-weight: 600;
-        color: #565674;
-        margin-top: 10px;
+        color: #6c757d;
+        letter-spacing: 1px;
     }
 
     /* Main content area */
@@ -106,25 +98,24 @@
         display: flex;
         flex-direction: column;
         overflow-y: auto;
-        padding-top: 70px; /* This matches the height of the fixed top bar */
-        padding-left: 20px;
-        padding-right: 20px;
+        margin-left: 250px;
+        padding-top: 70px;
     }
 
     /* Top bar styles */
     .top-bar {
         position: fixed;
         top: 0;
-        left: 220px; /* width of sidebar */
+        left: 250px;
         right: 0;
-        height: 60px;
+        height: 70px;
         background-color: #fff;
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        padding: 0 20px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
+        padding: 0 30px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        z-index: 999;
         border-bottom: 1px solid #ebedf2;
     }
 
@@ -135,13 +126,15 @@
     }
 
     .user-type {
-        margin-right: 10px;
-        font-weight: 500;
-        font-size: 14px;
+        margin-right: 15px;
+        font-weight: 600;
+        font-size: 12px;
         color: #6c757d;
-        background-color: #f5f5f5;
-        padding: 4px 8px;
-        border-radius: 4px;
+        background-color: #f8f9fa;
+        padding: 6px 12px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     .profile-btn {
@@ -154,35 +147,44 @@
     }
 
     .profile-img {
-        width: 35px;
-        height: 35px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         object-fit: cover;
         cursor: pointer;
+        border: 2px solid #e9ecef;
     }
 
     .dropdown-content {
         position: absolute;
         right: 0;
-        top: 45px;
+        top: 50px;
         background-color: white;
-        min-width: 180px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        border-radius: 5px;
-        z-index: 1;
+        min-width: 200px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        border-radius: 8px;
+        z-index: 1001;
         display: none;
+        overflow: hidden;
     }
 
     .dropdown-content a {
-        color: #333;
-        padding: 12px 16px;
+        color: #495057;
+        padding: 15px 20px;
         text-decoration: none;
-        display: block;
+        display: flex;
+        align-items: center;
         font-size: 14px;
+        transition: background-color 0.2s;
+    }
+
+    .dropdown-content a i {
+        margin-right: 10px;
+        font-size: 16px;
     }
 
     .dropdown-content a:hover {
-        background-color: #f5f5f5;
+        background-color: #f8f9fa;
     }
 
     /* Show dropdown when active class is added */
@@ -190,55 +192,78 @@
         display: block;
     }
 
-    /* Content area */
+    /* Content area styling */
     .content {
-        padding: 20px;
+        padding: 30px;
         flex: 1;
     }
 
     .card {
         background: white;
-        border-radius: 5px;
-        padding: 20px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-        margin-bottom: 20px;
-    }
-
-    h2 {
-        margin-bottom: 20px;
-        color: #333;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 25px;
+        border: 1px solid #e9ecef;
     }
 </style>
-  
+
 <!-- This is now a partial template - only the sidebar content -->
 <div class="sidebar">
-  <div>
-    <h1 class="h11" style="text-align:center; padding:20px;">MySebrena</h1>
-  </div>
-  <div class="sidebar-nav">
-    <div class="nav-item"><i class="material-icons">dashboard</i><a href="../module4/dashboard.php">Dashboard</a></div>
-    <div class="nav-divider">COMPONENTS</div>
-    <!-- option 1 -->
-    <div class="nav-item"><i class="material-icons">list</i><a href="../module4/meritAwardedList.php">Merit Awarded List</a></div>
-    <!-- option 2 -->
-    <div class="nav-item"><i class="material-icons">assignment</i><a href="../module4/claimAward.php">Claim Merit Award</a></div>
-    <!-- option 3 -->
-    <div class="nav-item"><i class="material-icons">list</i><a href="../module2/viewEventInfo.php">View Event Info</a></div>
-    <!-- option 4 -->
-    <div class="nav-item"><i class="material-icons">person_add</i><a href="{{ route('register.agency.view') }}">Register Agency</a></div>
-  </div>
+    <div class="sidebar-header">
+        <h1>MySebenarnya</h1>
+    </div>
+    <div class="sidebar-nav">
+        <div class="nav-item active">
+            <i class="material-icons">dashboard</i>
+            <a href=#>Dashboard</a>
+        </div>
+
+        
+
+        <div class="nav-divider">INQUIRY MANAGEMENT</div>
+        <!-- Submit New Inquiry -->
+        
+        <!-- My Inquiries -->
+        <div class="nav-item">
+            <i class="material-icons">list_alt</i>
+            <a href="{{ route('inquiry.history') }}">My Inquiries</a>
+        </div>
+        <!-- Public Inquiries -->
+        <div class="nav-item">
+            <i class="material-icons">public</i>
+            <a href="{{ route('inquiry.public') }}">Public Inquiries</a>
+        </div>
+        <div class="nav-divider">INFORMATION</div>
+        <!-- Inquiry History (placeholder) -->
+        <div class="nav-item">
+            <i class="material-icons">history</i>
+            <a href="#" style="color: #6c757d;">Activity History</a>
+        </div>
+         <!-- My Profile -->
+        <div class="nav-item">
+            <i class="material-icons">person</i>
+            <a href="{{ route('user.profile') }}">My Profile</a>
+        </div>
+    </div>
 </div>
 
-<!-- Top Bar -->
+
 <!-- Top Bar -->
 <div class="top-bar">
   <div class="profile-dropdown">
-    <div class="user-type">STUDENT</div>
+    <div class="user-type">
+      {{ session('username', 'USER') }}
+    </div>
     <button class="profile-btn" onclick="toggleDropdown(event)">
-      <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=John" alt="Profile" class="profile-img" />
+      @if(session('profile_picture'))
+        <img src="{{ asset('storage/' . session('profile_picture')) }}" alt="Profile" class="profile-img" />
+      @else
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=John" alt="Profile" class="profile-img" />
+      @endif
     </button>
     <div class="dropdown-content" id="profileDropdown">
-      <a href="profile.html"><i class="material-icons">person</i> My Profile</a>
+      <a href="{{ route('user.profile') }}"><i class="material-icons">person</i> My Profile</a>
       <a href="{{ route('logout') }}"
          onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
          <i class="material-icons">exit_to_app</i> Logout
@@ -249,19 +274,20 @@
     </div>
   </div>
 </div>
+
 <!-- JS -->
 <script>
     function toggleDropdown(event) {
-      event.stopPropagation();
-      document.getElementById("profileDropdown").classList.toggle("show");
+        event.stopPropagation();
+        document.getElementById("profileDropdown").classList.toggle("show");
     }
 
-    window.onclick = function (event) {
-      if (!event.target.matches('.profile-btn') && !event.target.matches('.profile-img')) {
-        const dropdown = document.getElementById("profileDropdown");
-        if (dropdown.classList.contains("show")) {
-          dropdown.classList.remove("show");
+    window.onclick = function(event) {
+        if (!event.target.matches('.profile-btn') && !event.target.matches('.profile-img')) {
+            const dropdown = document.getElementById("profileDropdown");
+            if (dropdown.classList.contains("show")) {
+                dropdown.classList.remove("show");
+            }
         }
-      }
     };
 </script>
