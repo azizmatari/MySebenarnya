@@ -15,7 +15,6 @@ return new class extends Migration
             $table->text('description');
             $table->enum('final_status', ['Under Investigation', 'True', 'Fake', 'Rejected'])->nullable();
             $table->date('submission_date');
-            $table->timestamps();
             $table->string('evidenceUrl', 150)->nullable();
             $table->string('evidenceFileUrl', 150)->nullable();
 

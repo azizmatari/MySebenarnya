@@ -15,8 +15,7 @@ return new class extends Migration
             $table->unsignedBigInteger('mcmcId')->nullable(); // FIXED: must match mcmc table type
             $table->string('agencyUsername', 20)->nullable();
             $table->string('profile_picture')->nullable();
-
-            // Add foreign key constraint (types must match exactly)
+            $table->enum('agencyType', ['Education', 'Police', 'Sports', 'Health']);
             $table->foreign('mcmcId')->references('mcmcId')->on('mcmc');
         });
     }

@@ -12,10 +12,11 @@ return new class extends Migration
             $table->id('assignmentId');
             $table->unsignedBigInteger('inquiryId');
             $table->unsignedBigInteger('agencyId');
-            $table->text('comments')->nullable();
+            $table->text('mcmcComments')->nullable();
             $table->boolean('isRejected');
-            $table->text('rejectedReason')->nullable();
             $table->unsignedBigInteger('mcmcId')->nullable();
+            $table->date('assignDate');
+
 
             // Add indexes for better performance
             $table->index('inquiryId', 'idx_assignment_inquiry');
