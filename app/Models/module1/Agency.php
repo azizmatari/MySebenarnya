@@ -12,7 +12,7 @@ class Agency extends Model
     // Primary key for agencies
     protected $primaryKey = 'agencyId';
     // Set to true if your table uses created_at/updated_at
-    public $timestamps = true;
+    public $timestamps = false;
 
     // Fields that can be mass assigned
     protected $fillable = [

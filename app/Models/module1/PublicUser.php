@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Models\module1;
 
 use Illuminate\Database\Eloquent\Model;
@@ -11,8 +12,8 @@ class PublicUser extends Model
     protected $table = 'publicuser';
     // Primary key for public users
     protected $primaryKey = 'userId';
-    // Set to true if your table uses created_at/updated_at
-    public $timestamps = true;
+    // No timestamps in the table
+    public $timestamps = false;
 
     // Fields that can be mass assigned
     protected $fillable = [

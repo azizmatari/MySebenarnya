@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\module1\PublicUser;
-use App\Models\module1\MCMC_Staff;
+use App\Models\module1\MCMC;
 use App\Models\module1\Agency;
 
 class UserAuthController extends Controller
@@ -20,12 +20,15 @@ class UserAuthController extends Controller
             'userPassword' => 'required|string|min:6|confirmed',
         ]);
 
-        $user = PublicUser::create([
-            'userName' => $request->userName,
-            'userEmail' => $request->userEmail,
-            'userPassword' => Hash::make($request->userPassword),
-            'userContact_number' => null,
-        ]);
+      
+$user = PublicUser::create([
+    'userName' => $request->userName,
+    'userEmail' => $request->userEmail,
+    'userPassword' => Hash::make($request->userPassword),
+    'userContact_number' => null,
+    'profile_picture' => null,
+]);
+        
 
         session([
             'user_id' => $user->userId,
@@ -63,7 +66,7 @@ class UserAuthController extends Controller
                 'userUsername' => 'required|string',
                 'password' => 'required|string'
             ]);
-            $user = MCMC_Staff::where('mcmcUsername', $request->userUsername)->first();
+            $user = MCMC::where('mcmcUsername', $request->userUsername)->first();
 
             // Debug logging for MCMC staff login
             \Log::info('--- MCMC Staff Login Attempt ---');

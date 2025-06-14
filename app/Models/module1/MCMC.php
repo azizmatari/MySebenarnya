@@ -5,11 +5,11 @@ namespace App\Models\module1;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 
-class MCMC_Staff extends Model
+class MCMC extends Model
 {
-    protected $table = 'mcmcstaff';
+    protected $table = 'mcmc';
     protected $primaryKey = 'mcmcId';
-    public $timestamps = true;
+    public $timestamps = false;
 
     protected $fillable = [
         'mcmcName',

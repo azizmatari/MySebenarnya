@@ -11,15 +11,12 @@ return new class extends Migration
         Schema::create('agency', function (Blueprint $table) {
             $table->id('agencyId');
             $table->string('agency_name', 50);
-
-            $table->string('agencyPassword', 15);
-            $table->integer('mcmcId')->unsigned()->nullable();
+            $table->string('agencyPassword', 70);
+            $table->unsignedBigInteger('mcmcId')->nullable(); // FIXED: must match mcmc table type
             $table->string('agencyUsername', 20)->nullable();
             $table->string('profile_picture')->nullable();
-            
-            $table->string('agencyUsername', 20)->nullable();
 
-            // Add foreign key constraint
+            // Add foreign key constraint (types must match exactly)
             $table->foreign('mcmcId')->references('mcmcId')->on('mcmc');
         });
     }
@@ -29,3 +26,5 @@ return new class extends Migration
         Schema::dropIfExists('agency');
     }
 };
+
+
