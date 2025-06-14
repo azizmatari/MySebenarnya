@@ -156,6 +156,8 @@ Route::get('/inquiry/history', [InquiryController::class, 'index'])->name('inqui
 // View public inquiries (completed inquiries for public viewing)
 Route::get('/inquiry/public', [InquiryController::class, 'publicInquiries'])->name('inquiry.public');
 
+
+
 // View evidence file for user's own inquiry
 Route::get('/inquiry/{inquiryId}/evidence/{filename}', [InquiryController::class, 'viewEvidenceFile'])->name('inquiry.evidence.view');
 
