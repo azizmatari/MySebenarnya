@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('agencyPassword', 255);
             $table->integer('mcmcId')->unsigned()->nullable();
             $table->string('agencyUsername', 20)->nullable();
+            $table->string('profile_picture')->nullable(); // Add this line
             $table->timestamps();
 
             $table->foreign('mcmcId')->references('mcmcId')->on('mcmcstaff');

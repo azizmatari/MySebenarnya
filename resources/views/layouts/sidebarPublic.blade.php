@@ -237,31 +237,40 @@
             <i class="material-icons">history</i>
             <a href="#" style="color: #6c757d;">Activity History</a>
         </div>
-    </div>
-</div>
-
-<!-- Top Bar -->
-<div class="top-bar">
-    <div class="profile-dropdown">
-        <div class="user-type">PUBLIC USER</div>
-        <button class="profile-btn" onclick="toggleDropdown(event)">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=PublicUser" alt="Profile" class="profile-img" />
-        </button>
-        <div class="dropdown-content" id="profileDropdown">
-            <a href="{{ route('user.profile') }}">
-                <i class="material-icons">person</i> My Profile
-            </a>
-            <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                <i class="material-icons">exit_to_app</i> Logout
-            </a>
+         <!-- My Profile -->
+        <div class="nav-item">
+            <i class="material-icons">person</i>
+            <a href="{{ route('user.profile') }}">My Profile</a>
         </div>
     </div>
 </div>
 
-<!-- Hidden logout form -->
-<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-    @csrf
-</form>
+
+<!-- Top Bar -->
+<div class="top-bar">
+  <div class="profile-dropdown">
+    <div class="user-type">
+      {{ session('username', 'USER') }}
+    </div>
+    <button class="profile-btn" onclick="toggleDropdown(event)">
+      @if(session('profile_picture'))
+        <img src="{{ asset('storage/' . session('profile_picture')) }}" alt="Profile" class="profile-img" />
+      @else
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=John" alt="Profile" class="profile-img" />
+      @endif
+    </button>
+    <div class="dropdown-content" id="profileDropdown">
+      <a href="{{ route('user.profile') }}"><i class="material-icons">person</i> My Profile</a>
+      <a href="{{ route('logout') }}"
+         onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+         <i class="material-icons">exit_to_app</i> Logout
+      </a>
+      <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+          @csrf
+      </form>
+    </div>
+  </div>
+</div>
 
 <!-- JS -->
 <script>

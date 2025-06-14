@@ -1,5 +1,6 @@
 <?php
 
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SharedControllers\DashboardController;
 use App\Http\Controllers\module1\UserProfileController;
@@ -20,9 +21,16 @@ Route::get('/dashboard/agency', [DashboardController::class, 'agencyDashboard'])
 =====================*/
 
 // ==================
-// User Profile Route
+// User Profile Routes (Public User & Agency)
 // ==================
-Route::get('/user/profile', [UserProfileController::class, 'view'])->name('user.profile');
+
+// Public User Profile
+Route::get('/user/profile', [UserProfileController::class, 'edit'])->name('user.profile');
+Route::post('/user/profile', [UserProfileController::class, 'update'])->name('user.profile.update');
+
+// Agency Profile
+Route::get('/agency/profile', [UserProfileController::class, 'edit'])->name('agency.profile');
+Route::post('/agency/profile', [UserProfileController::class, 'update'])->name('agency.profile.update');
 
 // ==================
 // Authentication Routes
@@ -35,9 +43,9 @@ Route::get('/register', function () {
 Route::post('/register', [UserAuthController::class, 'registerPublic'])->name('register.submit');
 
 // Show the Register Agency form
-Route::get('/register-agency', [App\Http\Controllers\module1\RegisterAgencyController::class, 'showRegisterForm'])->name('register.agency.view');
+Route::get('/register-agency', [RegisterAgencyController::class, 'showRegisterForm'])->name('register.agency.view');
 // Handle the Register Agency POST
-Route::post('/register-agency', [App\Http\Controllers\module1\RegisterAgencyController::class, 'register'])->name('register.agency.submit');
+Route::post('/register-agency', [RegisterAgencyController::class, 'register'])->name('register.agency.submit');
 
 // Login (All Users)
 Route::get('/login', function () {
@@ -61,6 +69,7 @@ Route::get('/forgot-password', function () {
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
 
 
 

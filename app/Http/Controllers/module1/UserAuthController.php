@@ -30,6 +30,7 @@ class UserAuthController extends Controller
         session([
             'user_id' => $user->userId,
             'username' => $user->userName,
+            'profile_picture' => $user->profile_picture,
             'role' => 'public'
         ]);
 
@@ -51,6 +52,7 @@ class UserAuthController extends Controller
                 session([
                     'user_id' => $user->userId,
                     'username' => $user->userName,
+                    'profile_picture' => $user->profile_picture,
                     'role' => 'public'
                 ]);
                 return redirect()->route('public.dashboard');
@@ -74,6 +76,7 @@ class UserAuthController extends Controller
                 session([
                     'user_id' => $user->mcmcId,
                     'username' => $user->mcmcName,
+                    'profile_picture' => $user->profile_picture,
                     'role' => 'mcmc'
                 ]);
                 \Log::info('MCMC login success!');
@@ -92,6 +95,7 @@ class UserAuthController extends Controller
                 session([
                     'user_id' => $user->agencyId,
                     'username' => $user->agency_name,
+                    'profile_picture' => $user->profile_picture,
                     'role' => 'agency'
                 ]);
                 return redirect()->route('agency.dashboard');

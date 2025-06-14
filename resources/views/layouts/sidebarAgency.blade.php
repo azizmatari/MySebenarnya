@@ -232,24 +232,37 @@ h2 {
     <!-- option 3 -->
      <div class="nav-item"><i class="material-icons">list</i><a href="../module2/viewEventInfo.php">View Event Info</a></div>
     <!-- option 4 -->
+    <div class="nav-item">
+    <i class="material-icons">person</i>
+    <a href="{{ route('agency.profile') }}">My Profile</a>
+</div>
   </div>
 </div>
 
 <!-- Top Bar -->
 <div class="top-bar">
   <div class="profile-dropdown">
-    <div class="user-type">STUDENT</div>
+    <div class="user-type">
+      {{ session('username', 'AGENCY') }}
+    </div>
     <button class="profile-btn" onclick="toggleDropdown(event)">
-      <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=John" alt="Profile" class="profile-img" />
+    @if(session('profile_picture'))
+        <img src="{{ asset('storage/' . session('profile_picture')) }}" alt="Profile" class="profile-img" />
+    @else
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Agency" alt="Profile" class="profile-img" />
+    @endif
     </button>
     <div class="dropdown-content" id="profileDropdown">
-        <a href="profile.html"><i class="material-icons">person</i> My Profile</a>
-        <a href="{{ route('logout') }}"onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="material-icons">exit_to_app</i> Logout</a>
-        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-            @csrf
-        </form>
+        <a href="{{ route('agency.profile') }}"><i class="material-icons">person</i> My Profile</a>
+        <a href="{{ route('logout') }}"
+        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+        <i class="material-icons">exit_to_app</i> Logout
+    </a>
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        @csrf
+    </form>
     </div>
-  </div>
+</div>
 </div>
 
  <!-- JS -->

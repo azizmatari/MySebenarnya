@@ -7,33 +7,57 @@ use Illuminate\Support\Facades\Hash;
 
 class PublicUser extends Model
 {
-    protected $table = 'publicuser'; // match your migration table name
+    // Table name for public users
+    protected $table = 'publicuser';
+    // Primary key for public users
     protected $primaryKey = 'userId';
+    // Set to true if your table uses created_at/updated_at
     public $timestamps = true;
 
+    // Fields that can be mass assigned
     protected $fillable = [
-        'userName',
-        'userEmail',
-        'userPassword',
-        'userContact_number',
+        'userName',             // User's full name
+        'userEmail',            // Email address
+        'userPassword',         // Hashed password
+        'userContact_number',   // Contact number
+        'profile_picture',      // Path to profile picture (nullable)
     ];
 
-    // Find user by email
+    // Hide sensitive fields when serializing
+    protected $hidden = [
+        'userPassword',
+    ];
+
+    /**
+     * Find a public user by email address.
+     */
     public static function findByEmail($email)
     {
         return self::where('userEmail', $email)->first();
     }
 
-    // Register new user
+    /**
+     * Register a new public user.
+     */
     public static function register($data)
     {
         $data['userPassword'] = Hash::make($data['userPassword']);
         return self::create($data);
     }
 
-    // Check password
+    /**
+     * Check if the provided password matches the user's password.
+     */
     public function checkPassword($password)
     {
         return Hash::check($password, $this->userPassword);
+    }
+
+    /**
+     * Get the user's profile picture URL or null.
+     */
+    public function getProfilePictureUrl()
+    {
+        return $this->profile_picture ? asset('storage/' . $this->profile_picture) : null;
     }
 }

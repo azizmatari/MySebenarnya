@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('userEmail', 50);
             $table->string('userPassword', 255);
             $table->string('userContact_number', 20)->nullable();
+            $table->string('profile_picture')->nullable(); // Add this line
             $table->timestamps();
         });
     }
