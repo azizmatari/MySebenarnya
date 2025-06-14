@@ -9,18 +9,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('inquiryassignment', function (Blueprint $table) {
-            $table->increments('assignmentId');
-            $table->integer('inquiryId')->unsigned();
-            $table->integer('agencyId')->unsigned();
-            $table->boolean('isRejected');
+            $table->id('assignmentId');
+            $table->unsignedBigInteger('inquiryId');
+            $table->unsignedBigInteger('agencyId');
             $table->text('comments')->nullable();
+            $table->boolean('isRejected');
             $table->text('rejectedReason')->nullable();
-            $table->integer('mcmcId')->unsigned()->nullable();
-            $table->timestamps();
+            $table->unsignedBigInteger('mcmcId')->nullable();
 
+            // Add indexes for better performance
+            $table->index('inquiryId', 'idx_assignment_inquiry');
+
+            // Add foreign key constraints
             $table->foreign('inquiryId')->references('inquiryId')->on('inquiry');
             $table->foreign('agencyId')->references('agencyId')->on('agency');
-            $table->foreign('mcmcId')->references('mcmcId')->on('mcmcstaff');
+            $table->foreign('mcmcId')->references('mcmcId')->on('mcmc');
         });
     }
 

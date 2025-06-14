@@ -6,403 +6,187 @@ use App\Http\Controllers\Controller;
 use App\Models\module3\StatusModule;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 
 class StatusController extends Controller
 {
     /**
      * Display the inquiry status page
-     * 
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function index()
     {
         try {
-            // Log page access for analytics
-            Log::info('Public user accessed inquiry status page', [
-                'timestamp' => now(),
-                'ip' => request()->ip(),
-                'user_agent' => request()->userAgent()
-            ]);
-
-            // Return the Blade view (pure HTML/CSS/JS)
+            // Return the view (this will be accessed via route)
             return view('module3.PublicUser_inquiry_status');
         } catch (\Exception $e) {
-            Log::error('Error loading inquiry status page: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
-
+            \Log::error('Error loading inquiry status page: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Unable to load inquiry status page.');
         }
     }
 
     /**
      * Get active inquiries via AJAX
-     * 
-     * This method handles all the business logic for fetching inquiries
-     * and returns properly formatted JSON data for the frontend
-     *
-     * @return JsonResponse
+     * This method returns JSON data for the frontend
      */
     public function getInquiries(): JsonResponse
     {
-        try {            // Temporarily disable caching to get fresh data for debugging
+        try {
+            // Get active inquiries from the model
             $inquiries = StatusModule::getActiveInquiries();
 
-            // Log raw data for debugging
-            Log::info('Raw inquiries from database:', [
-                'count' => count($inquiries),
-                'data' => $inquiries
-            ]);
-
-            // Validate and format the data
-            $formattedInquiries = $this->formatInquiriesForView($inquiries);
-
-            // Log successful retrieval
-            Log::info('Successfully retrieved active inquiries', [
-                'count' => count($formattedInquiries),
-                'timestamp' => now()
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'inquiries' => $formattedInquiries,
-                'count' => count($formattedInquiries),
-                'timestamp' => now()->toISOString()
-            ], 200);
+            // Return JSON response
+            return response()->json($inquiries, 200);
         } catch (\Exception $e) {
-            Log::error('Error fetching inquiries: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
-
+            \Log::error('Error fetching inquiries: ' . $e->getMessage());
             return response()->json([
-                'success' => false,
                 'error' => 'Unable to fetch inquiries',
-                'message' => config('app.debug') ? $e->getMessage() : 'Internal server error',
-                'timestamp' => now()->toISOString()
+                'message' => $e->getMessage()
             ], 500);
         }
     }
 
     /**
      * Get inquiry statistics via AJAX
-     *
-     * @return JsonResponse
      */
     public function getStatistics(): JsonResponse
     {
         try {
-            // Check cache first (cache for 10 minutes)
-            $cacheKey = 'inquiry_statistics';
-            $statistics = Cache::remember($cacheKey, 600, function () {
-                return StatusModule::getInquiryStatistics();
-            });
+            $statistics = StatusModule::getInquiryStatistics();
 
-            // Add additional calculated statistics
-            $enhancedStats = $this->enhanceStatistics($statistics);
-
-            Log::info('Successfully retrieved inquiry statistics', [
-                'stats' => $enhancedStats,
-                'timestamp' => now()
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'statistics' => $enhancedStats,
-                'timestamp' => now()->toISOString()
-            ], 200);
+            return response()->json($statistics, 200);
         } catch (\Exception $e) {
-            Log::error('Error fetching statistics: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
-
+            \Log::error('Error fetching statistics: ' . $e->getMessage());
             return response()->json([
-                'success' => false,
                 'error' => 'Unable to fetch statistics',
-                'message' => config('app.debug') ? $e->getMessage() : 'Internal server error',
-                'timestamp' => now()->toISOString()
+                'message' => $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Get specific inquiry details
-     *
-     * @param int $id
-     * @return JsonResponse
+     * Get inquiry details by ID
      */
-    public function getInquiryDetails($id): JsonResponse
+    public function getInquiryDetails(Request $request, $inquiryId): JsonResponse
     {
         try {
             // Validate inquiry ID
-            if (!is_numeric($id) || $id <= 0) {
+            if (!is_numeric($inquiryId) || $inquiryId <= 0) {
                 return response()->json([
-                    'success' => false,
                     'error' => 'Invalid inquiry ID'
                 ], 400);
             }
 
-            // Get inquiry details from model
-            $inquiry = StatusModule::getInquiryById($id);
+            // Get inquiry details
+            $inquiry = StatusModule::getInquiryById($inquiryId);
 
             if (!$inquiry) {
                 return response()->json([
-                    'success' => false,
                     'error' => 'Inquiry not found'
                 ], 404);
             }
 
-            // Format inquiry details
-            $formattedInquiry = $this->formatInquiryDetails($inquiry);
-
-            return response()->json([
-                'success' => true,
-                'inquiry' => $formattedInquiry,
-                'timestamp' => now()->toISOString()
-            ], 200);
+            return response()->json($inquiry, 200);
         } catch (\Exception $e) {
-            Log::error('Error fetching inquiry details: ' . $e->getMessage(), [
-                'inquiry_id' => $id,
-                'trace' => $e->getTraceAsString()
-            ]);
-
+            \Log::error('Error fetching inquiry details: ' . $e->getMessage());
             return response()->json([
-                'success' => false,
                 'error' => 'Unable to fetch inquiry details',
-                'message' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+                'message' => $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Clear cache and refresh data
-     *
-     * @return JsonResponse
+     * Get inquiries by agency
      */
-    public function refreshData(): JsonResponse
+    public function getInquiriesByAgency(Request $request, $agencyId): JsonResponse
     {
         try {
-            // Clear relevant caches
-            Cache::forget('active_inquiries_list');
-            Cache::forget('inquiry_statistics');
+            // Validate agency ID
+            if (!is_numeric($agencyId) || $agencyId <= 0) {
+                return response()->json([
+                    'error' => 'Invalid agency ID'
+                ], 400);
+            }
 
-            Log::info('Inquiry data cache cleared by user request');
+            // Get inquiries by agency
+            $inquiries = StatusModule::getInquiriesByAgency($agencyId);
+
+            return response()->json($inquiries, 200);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching inquiries by agency: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Unable to fetch inquiries by agency',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Check if inquiry is still active
+     */
+    public function checkInquiryStatus(Request $request, $inquiryId): JsonResponse
+    {
+        try {
+            $isActive = StatusModule::isInquiryActive($inquiryId);
 
             return response()->json([
-                'success' => true,
-                'message' => 'Data refreshed successfully',
-                'timestamp' => now()->toISOString()
+                'inquiry_id' => $inquiryId,
+                'is_active' => $isActive,
+                'status' => $isActive ? 'Under Investigation' : 'Processed'
             ], 200);
         } catch (\Exception $e) {
-            Log::error('Error refreshing data: ' . $e->getMessage());
-
+            \Log::error('Error checking inquiry status: ' . $e->getMessage());
             return response()->json([
-                'success' => false,
-                'error' => 'Unable to refresh data',
-                'message' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+                'error' => 'Unable to check inquiry status',
+                'message' => $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Display the inquiry creation form
-     * 
-     * @return \Illuminate\View\View
+     * Get inquiry count
      */
-    public function createForm()
+    public function getInquiryCount(): JsonResponse
     {
         try {
-            Log::info('User accessing inquiry creation form');
-            // Return the inquiry creation form view
-            return view('module3.inquiry_create');
+            $count = StatusModule::getInquiryCountByStatus('Under Investigation');
+
+            return response()->json([
+                'count' => $count,
+                'status' => 'Under Investigation'
+            ], 200);
         } catch (\Exception $e) {
-            Log::error('Error loading inquiry creation form: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Unable to load inquiry creation form.');
+            \Log::error('Error fetching inquiry count: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Unable to fetch inquiry count',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
     /**
-     * Store a new inquiry
-     * 
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * Refresh inquiries (force refresh)
      */
-    public function store(Request $request)
+    public function refreshInquiries(): JsonResponse
     {
         try {
-            // Validate the request data
-            $validated = $request->validate([
-                'title' => 'required|string|max:30',
-                'description' => 'required|string',
-                'evidence_url' => 'nullable|url|max:150',
-                'evidence_file' => 'nullable|file|max:10240', // 10MB max file size
-            ]);
+            // Clear any cache if you're using it
+            // Cache::forget('active_inquiries');
 
-            // TODO: Implement actual inquiry creation logic with StatusModule
-            // For now, just redirect back with success message
+            // Get fresh data
+            $inquiries = StatusModule::getActiveInquiries();
+            $statistics = StatusModule::getInquiryStatistics();
 
-            Log::info('New inquiry submitted', [
-                'title' => $validated['title'],
-                'user_id' => session('user_id') ?? 1, // Default to user ID 1 for testing
-            ]);
-
-            return redirect()->route('module3.status')
-                ->with('success', 'Inquiry submitted successfully.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()->back()
-                ->withErrors($e->validator)
-                ->withInput();
+            return response()->json([
+                'inquiries' => $inquiries,
+                'statistics' => $statistics,
+                'timestamp' => now()->toDateTimeString()
+            ], 200);
         } catch (\Exception $e) {
-            Log::error('Error storing new inquiry: ' . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Failed to submit inquiry. Please try again later.')
-                ->withInput();
+            \Log::error('Error refreshing inquiries: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Unable to refresh inquiries',
+                'message' => $e->getMessage()
+            ], 500);
         }
-    }
-
-    /**
-     * Display the user's inquiry history
-     * 
-     * @return \Illuminate\View\View
-     */
-    public function history()
-    {
-        try {
-            // For now, just return a placeholder view
-            return view('module3.inquiry_history');
-        } catch (\Exception $e) {
-            Log::error('Error loading inquiry history: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Unable to load inquiry history.');
-        }
-    }
-
-    /**
-     * Display public inquiries
-     * 
-     * @return \Illuminate\View\View
-     */
-    public function public()
-    {
-        try {
-            // For now, just return a placeholder view
-            return view('module3.inquiry_public');
-        } catch (\Exception $e) {
-            Log::error('Error loading public inquiries: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Unable to load public inquiries.');
-        }
-    }
-
-    /**
-     * Format inquiries data for the view
-     *
-     * @param array $inquiries
-     * @return array
-     */    private function formatInquiriesForView(array $inquiries): array
-    {
-        return array_map(function ($inquiry) {
-            return [
-                'inquiryId' => (int) $inquiry->inquiryId,
-                'title' => $this->sanitizeString($inquiry->title),
-                'description' => $this->sanitizeString($inquiry->description),
-                'final_status' => $this->sanitizeString($inquiry->final_status),
-                'submission_date' => $inquiry->submission_date,
-                'agency_name' => $this->sanitizeString($inquiry->agency_name),
-                'applicant_name' => $this->sanitizeString($inquiry->applicant_name),
-                'evidence_url' => $inquiry->evidence_url ?? null,
-                // Add formatted date for display
-                'formatted_date' => \Carbon\Carbon::parse($inquiry->submission_date)->format('M d, Y'),
-                // Add time ago format
-                'time_ago' => \Carbon\Carbon::parse($inquiry->submission_date)->diffForHumans(),
-            ];
-        }, $inquiries);
-    }
-
-    /**
-     * Format inquiry details for detailed view
-     *
-     * @param object $inquiry
-     * @return array
-     */
-    private function formatInquiryDetails($inquiry): array
-    {
-        return [
-            'inquiryId' => (int) $inquiry->inquiryId,
-            'title' => $this->sanitizeString($inquiry->title),
-            'description' => $this->sanitizeString($inquiry->description),
-            'final_status' => $this->sanitizeString($inquiry->final_status),
-            'submission_date' => $inquiry->submission_date,
-            'agency_name' => $this->sanitizeString($inquiry->agency_name),
-            'agencyId' => (int) $inquiry->agencyId,
-            'applicant_name' => $this->sanitizeString($inquiry->applicant_name),
-            'applicant_email' => $this->sanitizeString($inquiry->applicant_email ?? ''),
-            'applicant_contact' => $this->sanitizeString($inquiry->applicant_contact ?? ''),
-            'formatted_date' => \Carbon\Carbon::parse($inquiry->submission_date)->format('M d, Y'),
-            'time_ago' => \Carbon\Carbon::parse($inquiry->submission_date)->diffForHumans(),
-        ];
-    }
-
-    /**
-     * Enhance statistics with additional calculations
-     *
-     * @param array $statistics
-     * @return array
-     */
-    private function enhanceStatistics(array $statistics): array
-    {
-        return [
-            'active_inquiries' => (int) ($statistics['active_inquiries'] ?? 0),
-            'agencies_involved' => (int) ($statistics['agencies_involved'] ?? 0),
-            'this_week' => (int) ($statistics['this_week'] ?? 0),
-            // Add percentage of weekly inquiries
-            'weekly_percentage' => $this->calculateWeeklyPercentage($statistics),
-            // Add average per agency
-            'avg_per_agency' => $this->calculateAveragePerAgency($statistics),
-            'last_updated' => now()->toISOString(),
-        ];
-    }
-
-    /**
-     * Calculate weekly percentage
-     *
-     * @param array $statistics
-     * @return float
-     */
-    private function calculateWeeklyPercentage(array $statistics): float
-    {
-        $total = (int) ($statistics['active_inquiries'] ?? 0);
-        $weekly = (int) ($statistics['this_week'] ?? 0);
-
-        return $total > 0 ? round(($weekly / $total) * 100, 1) : 0.0;
-    }
-
-    /**
-     * Calculate average inquiries per agency
-     *
-     * @param array $statistics
-     * @return float
-     */
-    private function calculateAveragePerAgency(array $statistics): float
-    {
-        $total = (int) ($statistics['active_inquiries'] ?? 0);
-        $agencies = (int) ($statistics['agencies_involved'] ?? 0);
-
-        return $agencies > 0 ? round($total / $agencies, 1) : 0.0;
-    }
-
-    /**
-     * Sanitize string for safe output
-     *
-     * @param string $string
-     * @return string
-     */
-    private function sanitizeString(?string $string): string
-    {
-        if (is_null($string)) {
-            return '';
-        }
-
-        // Remove any malicious content and trim
-        return trim(htmlspecialchars($string, ENT_QUOTES, 'UTF-8'));
     }
 }

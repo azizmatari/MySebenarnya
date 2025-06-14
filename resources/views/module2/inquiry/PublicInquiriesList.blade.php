@@ -16,20 +16,15 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-12">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
+                        <div class="card">                            <div class="card-header bg-primary text-white">
                                 <h3 class="mb-0">
                                     <i class="material-icons" style="vertical-align: middle; margin-right: 10px;">public</i>
                                     Public Inquiries
                                 </h3>
-                                <p class="mb-0 mt-2 opacity-75">
-                                    Browse all verified inquiries submitted by community members
-                                </p>
                             </div>
-                            <div class="card-body">
-                                <!-- Search and Filter Section -->
+                            <div class="card-body">                                <!-- Search and Filter Section -->
                                 <div class="row mb-4">
-                                    <div class="col-md-6">
+                                    <div class="col-md-8">
                                         <div class="input-group">
                                             <span class="input-group-text">
                                                 <i class="material-icons" style="font-size: 18px;">search</i>
@@ -37,30 +32,17 @@
                                             <input type="text" id="searchInput" class="form-control" placeholder="Search inquiries by title or description...">
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
-                                        <select id="categoryFilter" class="form-select">
-                                            <option value="">All Categories</option>
-                                            <option value="Health">Health</option>
-                                            <option value="Politics">Politics</option>
-                                            <option value="Entertainment">Entertainment</option>
-                                            <option value="Finance">Finance</option>
-                                            <option value="Safety">Safety</option>
-                                            <option value="Government">Government</option>
-                                            <option value="Technology">Technology</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <select id="resultFilter" class="form-select">
                                             <option value="">All Results</option>
-                                            <option value="true">Verified True</option>
-                                            <option value="false">Misleading/False</option>
+                                            <option value="true">True</option>
+                                            <option value="false">Fake</option>
                                         </select>
                                     </div>
                                 </div>
 
-                                <!-- Statistics Cards -->
-                                <div class="row mb-4">
-                                    <div class="col-md-3">
+                                <!-- Statistics Cards -->                                <div class="row mb-4">
+                                    <div class="col-md-4">
                                         <div class="card bg-info text-white">
                                             <div class="card-body text-center">
                                                 <i class="material-icons" style="font-size: 32px;">assignment</i>
@@ -68,33 +50,21 @@
                                                 <p class="mb-0">Total Inquiries</p>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="col-md-3">
+                                    </div>                                    <div class="col-md-4">
                                         <div class="card bg-success text-white">
                                             <div class="card-body text-center">
                                                 <i class="material-icons" style="font-size: 32px;">verified</i>
                                                 <h4 class="mt-2">{{ $publicInquiries->where('result', 'true')->count() }}</h4>
-                                                <p class="mb-0">Verified True</p>
+                                                <p class="mb-0">True</p>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="col-md-3">
+                                    </div><div class="col-md-4">
                                         <div class="card bg-danger text-white">
                                             <div class="card-body text-center">
                                                 <i class="material-icons" style="font-size: 32px;">error</i>
                                                 <h4 class="mt-2">{{ $publicInquiries->where('result', 'false')->count() }}</h4>
-                                                <p class="mb-0">Misleading/False</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="card bg-warning text-white">
-                                            <div class="card-body text-center">
-                                                <i class="material-icons" style="font-size: 32px;">category</i>
-                                                <h4 class="mt-2">{{ $publicInquiries->pluck('category')->unique()->count() }}</h4>
-                                                <p class="mb-0">Categories</p>
-                                            </div>
-                                        </div>
+                                                <p class="mb-0">Fake</p>
+                                            </div>                                        </div>
                                     </div>
                                 </div>
 
@@ -102,9 +72,7 @@
                                 <div id="inquiriesList">
                                     @if($publicInquiries && $publicInquiries->count() > 0)
                                         <div class="row">
-                                            @foreach($publicInquiries as $inquiry)
-                                                <div class="col-12 mb-3 inquiry-item" 
-                                                     data-category="{{ $inquiry->category }}" 
+                                            @foreach($publicInquiries as $inquiry)                                                <div class="col-12 mb-3 inquiry-item" 
                                                      data-result="{{ $inquiry->result }}"
                                                      data-search="{{ strtolower($inquiry->title . ' ' . $inquiry->description) }}">
                                                     <div class="card border-left-{{ $inquiry->result === 'true' ? 'success' : 'danger' }} shadow h-100 py-2">
@@ -112,32 +80,20 @@
                                                             <div class="row no-gutters align-items-center">
                                                                 <div class="col mr-2">
                                                                     <div class="d-flex justify-content-between align-items-start">
-                                                                        <div class="flex-grow-1">
-                                                                            <div class="d-flex align-items-center mb-2">
+                                                                        <div class="flex-grow-1">                                                                            <div class="d-flex align-items-center mb-2">
                                                                                 <h5 class="font-weight-bold text-primary mb-0 me-3">
                                                                                     {{ $inquiry->title }}
                                                                                 </h5>
-                                                                                <span class="badge bg-secondary small">{{ $inquiry->category }}</span>
                                                                             </div>
                                                                             
                                                                             <p class="text-muted mb-2">
                                                                                 {{ Str::limit($inquiry->description, 150) }}
                                                                             </p>
-                                                                            
-                                                                            <div class="row text-muted small">
-                                                                                <div class="col-md-4">
-                                                                                    <i class="material-icons" style="font-size: 14px; vertical-align: middle;">person</i>
-                                                                                    <strong>By:</strong> {{ $inquiry->anonymized_user }}
-                                                                                </div>
-                                                                                <div class="col-md-4">
-                                                                                    <i class="material-icons" style="font-size: 14px; vertical-align: middle;">platform</i>
-                                                                                    <strong>Source:</strong> {{ $inquiry->source_platform }}
-                                                                                </div>
-                                                                                <div class="col-md-4">
-                                                                                    <i class="material-icons" style="font-size: 14px; vertical-align: middle;">attach_file</i>
-                                                                                    <strong>Evidence:</strong> {{ $inquiry->evidence_count }} files
-                                                                                </div>
-                                                                            </div>
+                                                                                                              <div class="row text-muted small">                                                <div class="col-md-6">
+                                                    <i class="material-icons" style="font-size: 14px; vertical-align: middle;">person</i>
+                                                    <strong>By:</strong> {{ $inquiry->anonymized_user }}
+                                                </div>
+                                            </div>
                                                                             
                                                                             <div class="row text-muted small mt-1">
                                                                                 <div class="col-md-6">
@@ -152,18 +108,17 @@
                                                                         </div>
                                                                         
                                                                         <div class="text-right">
-                                                                            <div class="d-flex flex-column align-items-end gap-2">
-                                                                                @if($inquiry->result === 'true')
-                                                                                    <span class="badge bg-success text-white px-3 py-2">
-                                                                                        <i class="material-icons" style="font-size: 14px; vertical-align: middle;">verified</i>
-                                                                                        VERIFIED TRUE
-                                                                                    </span>
-                                                                                @else
-                                                                                    <span class="badge bg-danger text-white px-3 py-2">
-                                                                                        <i class="material-icons" style="font-size: 14px; vertical-align: middle;">error</i>
-                                                                                        MISLEADING/FALSE
-                                                                                    </span>
-                                                                                @endif
+                                                                            <div class="d-flex flex-column align-items-end gap-2">                                                                @if($inquiry->result === 'true')
+                                                                    <span class="badge bg-success text-white px-3 py-2">
+                                                                        <i class="material-icons" style="font-size: 14px; vertical-align: middle;">verified</i>
+                                                                        True
+                                                                    </span>
+                                                                @elseif($inquiry->result === 'false')
+                                                                    <span class="badge bg-danger text-white px-3 py-2">
+                                                                        <i class="material-icons" style="font-size: 14px; vertical-align: middle;">error</i>
+                                                                        Fake
+                                                                    </span>
+                                                                @endif
                                                                                 
                                                                                 <span class="badge bg-primary text-white px-2 py-1 small">
                                                                                     ID: #{{ str_pad($inquiry->id, 4, '0', STR_PAD_LEFT) }}
@@ -179,18 +134,19 @@
                                                                 <div class="row mt-3">
                                                                     <div class="col-12">
                                                                         <div class="alert alert-{{ $inquiry->result === 'true' ? 'success' : 'warning' }} mb-0">
-                                                                            <div class="d-flex justify-content-between align-items-start">
-                                                                                <div class="flex-grow-1">
+                                                                            <div class="d-flex justify-content-between align-items-start">                                                                                <div class="flex-grow-1">
                                                                                     <strong>
                                                                                         <i class="material-icons" style="font-size: 16px; vertical-align: middle; margin-right: 5px;">admin_panel_settings</i>
                                                                                         Official Response:
                                                                                     </strong>
                                                                                     <p class="mb-0 mt-1">{{ Str::limit($inquiry->admin_response, 200) }}</p>
                                                                                 </div>
-                                                                                <button type="button" class="btn btn-outline-primary btn-sm ms-3" onclick="viewFullResponse({{ $inquiry->id }})">
-                                                                                    <i class="material-icons" style="font-size: 14px; vertical-align: middle;">visibility</i>
-                                                                                    View Full
-                                                                                </button>
+                                                                                <div class="d-flex gap-2 ms-3">
+                                                                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="viewFullResponse({{ $inquiry->id }})">
+                                                                                        <i class="material-icons" style="font-size: 14px; vertical-align: middle;">visibility</i>
+                                                                                        View Full
+                                                                                    </button>
+                                                                                </div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -246,8 +202,7 @@
                     <!-- Content will be loaded here -->
                 </div>
             </div>
-        </div>
-    </div>
+        </div>    </div>
 
     <style>
         /* Ensure proper spacing for sidebar layout */
@@ -330,21 +285,17 @@
     <script>
         // Store inquiry data for modals
         const publicInquiries = @json($publicInquiries);
-        
-        // Search and filter functionality
+          // Search and filter functionality
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('searchInput');
-            const categoryFilter = document.getElementById('categoryFilter');
             const resultFilter = document.getElementById('resultFilter');
             
             searchInput.addEventListener('input', filterInquiries);
-            categoryFilter.addEventListener('change', filterInquiries);
             resultFilter.addEventListener('change', filterInquiries);
         });
         
         function filterInquiries() {
             const search = document.getElementById('searchInput').value.toLowerCase();
-            const category = document.getElementById('categoryFilter').value;
             const result = document.getElementById('resultFilter').value;
             
             const inquiryItems = document.querySelectorAll('.inquiry-item');
@@ -352,14 +303,12 @@
             
             inquiryItems.forEach(item => {
                 const itemSearch = item.dataset.search;
-                const itemCategory = item.dataset.category;
                 const itemResult = item.dataset.result;
                 
                 const matchesSearch = !search || itemSearch.includes(search);
-                const matchesCategory = !category || itemCategory === category;
                 const matchesResult = !result || itemResult === result;
                 
-                if (matchesSearch && matchesCategory && matchesResult) {
+                if (matchesSearch && matchesResult) {
                     item.style.display = 'block';
                     visibleCount++;
                 } else {
@@ -378,7 +327,6 @@
         
         function clearFilters() {
             document.getElementById('searchInput').value = '';
-            document.getElementById('categoryFilter').value = '';
             document.getElementById('resultFilter').value = '';
             filterInquiries();
         }
@@ -396,22 +344,13 @@
                             <tr>
                                 <td class="text-muted" style="width: 150px;">Inquiry ID:</td>
                                 <td><strong>#${String(inquiry.id).padStart(4, '0')}</strong></td>
-                            </tr>
-                            <tr>
+                            </tr>                            <tr>
                                 <td class="text-muted">Title:</td>
                                 <td><strong>${inquiry.title}</strong></td>
                             </tr>
                             <tr>
-                                <td class="text-muted">Category:</td>
-                                <td><span class="badge bg-secondary">${inquiry.category}</span></td>
-                            </tr>
-                            <tr>
                                 <td class="text-muted">Verification Result:</td>
-                                <td><span class="badge bg-${inquiry.result === 'true' ? 'success' : 'danger'}">${inquiry.result === 'true' ? 'VERIFIED TRUE' : 'MISLEADING/FALSE'}</span></td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted">Source Platform:</td>
-                                <td>${inquiry.source_platform}</td>
+                                <td><span class="badge bg-${inquiry.result === 'true' ? 'success' : 'danger'}">${inquiry.result === 'true' ? 'TRUE' : 'FAKE'}</span></td>
                             </tr>
                         </table>
                     </div>
@@ -423,22 +362,55 @@
                             <i class="material-icons" style="vertical-align: middle; margin-right: 8px;">admin_panel_settings</i>
                             <strong>Response from Verification Team:</strong>
                             <p class="mt-2 mb-0">${inquiry.admin_response}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <h6 class="text-primary">Privacy Notice</h6>
-                        <div class="alert alert-info">
-                            <i class="material-icons" style="vertical-align: middle; margin-right: 8px;">privacy_tip</i>
-                            <strong>Data Protection:</strong> Personal information of the original submitter has been anonymized to protect privacy while maintaining transparency in our verification process.
-                        </div>
-                    </div>
+                        </div>                    </div>
                 </div>
             `;
+              new bootstrap.Modal(document.getElementById('responseModal')).show();}
+  
+        
+        // Search and Filter functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const resultFilter = document.getElementById('resultFilter');
+            const inquiryItems = document.querySelectorAll('.inquiry-item');
             
-            new bootstrap.Modal(document.getElementById('responseModal')).show();
-        }
+            function filterInquiries() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const resultValue = resultFilter.value;
+                
+                inquiryItems.forEach(item => {
+                    const searchText = item.dataset.search || '';
+                    const itemResult = item.dataset.result || '';
+                    
+                    const matchesSearch = !searchTerm || searchText.includes(searchTerm);
+                    const matchesResult = !resultValue || itemResult === resultValue;
+                    
+                    if (matchesSearch && matchesResult) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+                
+                // Update results count
+                updateResultsCount();
+            }
+            
+            function updateResultsCount() {
+                const visibleItems = document.querySelectorAll('.inquiry-item[style*="block"], .inquiry-item:not([style*="none"])').length;
+                const totalItems = inquiryItems.length;
+                
+                // You can add a results counter here if needed
+                console.log(`Showing ${visibleItems} of ${totalItems} inquiries`);
+            }
+            
+            // Add event listeners
+            searchInput.addEventListener('input', filterInquiries);
+            resultFilter.addEventListener('change', filterInquiries);
+            
+            // Initial filter
+            filterInquiries();
+        });
         
         // Auto-refresh functionality
         let lastActivity = Date.now();

@@ -216,8 +216,11 @@
     <div class="sidebar-nav">
         <div class="nav-item active">
             <i class="material-icons">dashboard</i>
-            <a href="{{ route('module3.status') }}">Dashboard</a>
+            <a href=#>Dashboard</a>
         </div>
+
+        
+
         <div class="nav-divider">INQUIRY MANAGEMENT</div>
         <!-- Submit New Inquiry -->
         
