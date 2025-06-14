@@ -37,8 +37,7 @@ class InquiryController extends Controller
                 'final_status' => 'Under Investigation', // Set initial status
                 'submission_date' => now()->toDateString(), // date format for your DB
                 'evidenceUrl' => $validated['evidence_links'] ?? null, // Store evidence links
-                'created_at' => now(),
-                'updated_at' => now(),
+                // Removed created_at and updated_at - they don't exist in the migration
             ]);
 
             // Handle file uploads - store file paths in evidenceFileUrl
@@ -59,8 +58,8 @@ class InquiryController extends Controller
                 DB::table('inquiry')
                     ->where('inquiryId', $inquiryId)
                     ->update([
-                        'evidenceFileUrl' => implode(',', $filePaths),
-                        'updated_at' => now()
+                        'evidenceFileUrl' => implode(',', $filePaths)
+                        // Removed updated_at - it doesn't exist in the migration
                     ]);
             }
 
@@ -69,10 +68,10 @@ class InquiryController extends Controller
                 DB::table('inquiryassignment')->insert([
                     'inquiryId' => $inquiryId,
                     'agencyId' => 1, // Default agency ID
-                    'comments' => 'New inquiry submitted and assigned for investigation',
+                    'mcmcComments' => 'New inquiry submitted and assigned for investigation',
                     'isRejected' => 0,
-                    'rejectedReason' => null,
                     'mcmcId' => 1, // Default MCMC ID
+                    'assignDate' => now()->toDateString(), // Use assignDate field from migration
                 ]);
             } catch (\Exception $e) {
                 // Assignment table might not exist, continue without it
@@ -84,9 +83,8 @@ class InquiryController extends Controller
                     'inquiryId' => $inquiryId,
                     'agencyId' => 1, // Default agency ID
                     'status' => 'Under Investigation',
-                    'status_comment' => 'Your news verification request has been received and is now under investigation by our team',
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'status_comment' => 'Your news verification request has been received and is now under investigation by our team'
+                    // Removed created_at and updated_at - they don't exist in the migration
                 ]);
             } catch (\Exception $e) {
                 // Status history table might not exist, continue without it
@@ -155,13 +153,12 @@ class InquiryController extends Controller
                     'i.final_status',
                     'i.submission_date',
                     'i.evidenceFileUrl',
-                    'i.evidenceUrl', // Add evidence links
-                    'i.created_at',
-                    'ia.comments as admin_response',
-                    'ia.isRejected',
-                    'ia.rejectedReason'
+                    'i.evidenceUrl',
+                    'ia.mcmcComments as admin_response', // Use correct field from migration
+                    'ia.isRejected'
+                    // Removed 'created_at' and 'rejectedReason' - don't exist in migration
                 )
-                ->orderBy('i.created_at', 'desc')
+                ->orderBy('i.submission_date', 'desc') // Use submission_date instead of created_at
                 ->get()
                 ->map(function ($inquiry) {
                     // Map database status to display status
@@ -219,13 +216,12 @@ class InquiryController extends Controller
                     try {
                         $status_history = DB::table('inquirystatushistory')
                             ->where('inquiryId', $inquiry->id)
-                            ->select('status', 'status_comment', 'created_at')
-                            ->orderBy('created_at', 'asc')
+                            ->select('status', 'status_comment') // Remove created_at since it doesn't exist
                             ->get()
                             ->map(function ($history) {
                                 return [
                                     'status' => strtolower(str_replace(' ', '_', $history->status)),
-                                    'date' => $history->created_at ?? now(),
+                                    'date' => now(), // Use current date since no timestamps
                                     'description' => $history->status_comment ?? $this->getStatusDescription($history->status)
                                 ];
                             })
@@ -235,7 +231,7 @@ class InquiryController extends Controller
                         $status_history = [
                             [
                                 'status' => 'under_investigation',
-                                'date' => $inquiry->created_at ?? $inquiry->submission_date,
+                                'date' => $inquiry->submission_date, // Use submission_date
                                 'description' => 'Your news verification request was received and is under investigation'
                             ]
                         ];
@@ -246,7 +242,7 @@ class InquiryController extends Controller
                         $status_history = [
                             [
                                 'status' => 'under_investigation',
-                                'date' => $inquiry->created_at ?? $inquiry->submission_date,
+                                'date' => $inquiry->submission_date, // Use submission_date
                                 'description' => 'Your news verification request was received and is under investigation'
                             ]
                         ];
@@ -256,11 +252,11 @@ class InquiryController extends Controller
                         'description' => $inquiry->description,
                         'status' => $status,
                         'submission_date' => $inquiry->submission_date,
-                        'created_at' => $inquiry->created_at,
+                        'created_at' => $inquiry->submission_date, // Use submission_date since created_at doesn't exist
                         'result' => $result,
-                        'admin_response' => $inquiry->admin_response ?? ($inquiry->isRejected ? $inquiry->rejectedReason : null),
+                        'admin_response' => $inquiry->admin_response ?? ($inquiry->isRejected ? 'Request was rejected' : null),
                         'evidence_files' => $evidence_files,
-                        'evidence_url' => $inquiry->evidenceUrl, // Add evidence links
+                        'evidence_url' => $inquiry->evidenceUrl,
                         'status_history' => $status_history
                     ];
                 });        } catch (\Exception $e) {
@@ -357,10 +353,18 @@ class InquiryController extends Controller
         \Log::info('PublicInquiries method called');
         
         try {
-            // Debug: Test database connection
-            $dbTest = DB::select('SELECT 1 as test');
-            \Log::info('Database connection successful: ' . json_encode($dbTest));
+            // Debug: Test database connection and check for data
+            $totalInquiries = DB::table('inquiry')->count();
+            $completedInquiries = DB::table('inquiry')->whereIn('final_status', ['True', 'Fake'])->count();
             
+            \Log::info("Database check - Total inquiries: $totalInquiries, Completed: $completedInquiries");
+            
+            // If no completed inquiries, log sample data
+            if ($completedInquiries === 0) {
+                $sampleInquiries = DB::table('inquiry')->take(3)->get();
+                \Log::info('No completed inquiries found. Sample data: ' . json_encode($sampleInquiries));
+            }
+
             // Fetch only completed inquiries (True/Fake status) from database
             $rawInquiries = DB::table('inquiry as i')
                 ->leftJoin('inquiryassignment as ia', 'i.inquiryId', '=', 'ia.inquiryId')
@@ -374,15 +378,14 @@ class InquiryController extends Controller
                     'i.submission_date',
                     'i.evidenceFileUrl',
                     'i.evidenceUrl',
-                    'i.created_at',
-                    'i.updated_at',
-                    'ia.comments as admin_response',
-                    'u.userUsername as username'
+                    'ia.mcmcComments as admin_response', // Use correct field name from migration
+                    'u.userName as username' // Fixed: use userName not userUsername
                 )
-                ->orderBy('i.updated_at', 'desc')
+                ->orderBy('i.submission_date', 'desc') // Use submission_date since updated_at doesn't exist
                 ->get();
 
             \Log::info('Raw inquiries count: ' . $rawInquiries->count());
+            \Log::info('Raw inquiries sample: ' . json_encode($rawInquiries->take(1)));
 
             // Process the raw data into a proper format for the view
             $publicInquiries = $rawInquiries->map(function ($inquiry) {
@@ -399,7 +402,7 @@ class InquiryController extends Controller
                     'description' => $inquiry->description,
                     'status' => 'completed', // All public inquiries are completed
                     'submission_date' => $inquiry->submission_date,
-                    'completion_date' => $inquiry->updated_at ?? $inquiry->created_at,
+                    'completion_date' => $inquiry->submission_date, // Use submission_date since updated_at doesn't exist
                     'result' => $this->mapFinalStatusToResult($inquiry->final_status),
                     'admin_response' => $inquiry->admin_response ?? $this->getDefaultResponse($inquiry->final_status),
                     'anonymized_user' => $anonymized_user,
@@ -410,7 +413,7 @@ class InquiryController extends Controller
             });
 
             // Log for debugging
-            \Log::info('Public Inquiries - Found ' . $publicInquiries->count() . ' completed inquiries');
+            \Log::info('Public Inquiries - Processed ' . $publicInquiries->count() . ' completed inquiries');
 
         } catch (\Exception $e) {
             // Log the exception for debugging
@@ -611,6 +614,122 @@ class InquiryController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error viewing evidence file: ' . $e->getMessage());
             abort(500, 'Unable to access evidence file');
+        }
+    }
+
+    /**
+     * Debug method to test data retrieval
+     */
+    public function debugPublicInquiries()
+    {
+        try {
+            // Test basic database connection
+            $inquiryCount = DB::table('inquiry')->count();
+            $completedCount = DB::table('inquiry')->whereIn('final_status', ['True', 'Fake'])->count();
+            
+            // Test query
+            $rawData = DB::table('inquiry as i')
+                ->leftJoin('inquiryassignment as ia', 'i.inquiryId', '=', 'ia.inquiryId')
+                ->leftJoin('publicuser as u', 'i.userId', '=', 'u.userId')
+                ->whereIn('i.final_status', ['True', 'Fake'])
+                ->select(
+                    'i.inquiryId as id',
+                    'i.title',
+                    'i.description',
+                    'i.final_status',
+                    'i.submission_date',
+                    'i.evidenceFileUrl',
+                    'i.evidenceUrl',
+                    'ia.mcmcComments as admin_response',
+                    'u.userName as username'
+                )
+                ->get();
+            
+            return response()->json([
+                'total_inquiries' => $inquiryCount,
+                'completed_inquiries' => $completedCount,
+                'query_result_count' => $rawData->count(),
+                'sample_data' => $rawData->take(2),
+                'all_inquiries_sample' => DB::table('inquiry')->take(3)->get()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+    }
+
+    /**
+     * Create test data for public inquiries page
+     */
+    public function createTestData()
+    {
+        try {
+            // First, create a test user if doesn't exist
+            $testUserId = DB::table('publicuser')->insertGetId([
+                'userName' => 'Test User',
+                'userEmail' => 'test@example.com',
+                'userPassword' => bcrypt('password'),
+                'userContact_number' => '1234567890'
+            ]);
+
+            // Create some completed inquiries for public display
+            $inquiry1 = DB::table('inquiry')->insertGetId([
+                'title' => 'COVID-19 Vaccine Safety',
+                'description' => 'Verification request about recent claims regarding COVID-19 vaccine side effects circulating on social media platforms.',
+                'userId' => $testUserId,
+                'final_status' => 'True',
+                'submission_date' => now()->subDays(5)->format('Y-m-d'),
+                'evidenceUrl' => 'https://example.com/covid-article',
+                'evidenceFileUrl' => null
+            ]);
+
+            $inquiry2 = DB::table('inquiry')->insertGetId([
+                'title' => 'Economic Data Misinformation',
+                'description' => 'Claims about unemployment statistics that appear to be misleading and need fact-checking verification.',
+                'userId' => $testUserId,
+                'final_status' => 'Fake',
+                'submission_date' => now()->subDays(3)->format('Y-m-d'),
+                'evidenceUrl' => null,
+                'evidenceFileUrl' => 'evidence/test1.pdf,evidence/test2.jpg'
+            ]);
+
+            $inquiry3 = DB::table('inquiry')->insertGetId([
+                'title' => 'Climate Change Research',
+                'description' => 'Verification of recent scientific claims about climate change data that need professional review.',
+                'userId' => $testUserId,
+                'final_status' => 'True',
+                'submission_date' => now()->subDays(1)->format('Y-m-d'),
+                'evidenceUrl' => 'https://example.com/climate-study',
+                'evidenceFileUrl' => null
+            ]);
+
+            // Create assignment records
+            foreach ([$inquiry1, $inquiry2, $inquiry3] as $inquiryId) {
+                DB::table('inquiryassignment')->insert([
+                    'inquiryId' => $inquiryId,
+                    'agencyId' => 1,
+                    'mcmcComments' => 'Investigation completed by our verification team.',
+                    'isRejected' => false,
+                    'mcmcId' => 1,
+                    'assignDate' => now()->subDays(2)->format('Y-m-d')
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Test data created successfully',
+                'inquiries_created' => 3,
+                'test_user_id' => $testUserId
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 }
