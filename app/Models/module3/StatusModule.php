@@ -17,7 +17,7 @@ class StatusModule extends Model
             // First, check if there are any inquiries in the database
             $totalInquiries = DB::select("SELECT COUNT(*) as count FROM inquiry");
             $totalCount = $totalInquiries[0]->count ?? 0;
-            
+
             Log::info('Total inquiries in database: ' . $totalCount);
 
             // If no inquiries exist, create some test data
@@ -31,15 +31,21 @@ class StatusModule extends Model
                     i.inquiryId,
                     i.title,
                     i.description,
-                    COALESCE(i.final_status, 'Under Investigation') as final_status,
+                    COALESCE(i.final_status, 'Pending') as final_status,
                     i.submission_date,
-                    '--' as agency_name,
+                    COALESCE(a.agency_name, 'Not Assigned') as agency_name,
                     COALESCE(pu.userName, 'Anonymous User') as applicant_name,
                     COALESCE(i.evidenceUrl, NULL) as evidence_url,
-                    COALESCE(i.evidenceFileUrl, NULL) as evidence_file_url
+                    COALESCE(i.evidenceFileUrl, NULL) as evidence_file_url,
+                    CASE 
+                        WHEN ia.assignDate IS NOT NULL THEN ia.assignDate
+                        ELSE 'Not Assigned'
+                    END as assignment_date
                 FROM inquiry i
                 LEFT JOIN publicuser pu ON i.userId = pu.userId
-                WHERE (i.final_status IN ('Under Investigation', 'Pending') 
+                LEFT JOIN inquiryassignment ia ON i.inquiryId = ia.inquiryId
+                LEFT JOIN agency a ON ia.agencyId = a.agencyId
+                WHERE (i.final_status = 'Under Investigation' 
                        OR i.final_status IS NULL 
                        OR i.final_status = '')
                 ORDER BY i.submission_date DESC
@@ -58,194 +64,72 @@ class StatusModule extends Model
         }
     }
 
-    /**
-     * Create test inquiries for demonstration
-     */
-    private static function createTestInquiries()
-    {
-        try {
-            // Create test inquiries
-            DB::insert("
-                INSERT INTO inquiry (title, description, userId, final_status, submission_date, evidenceUrl, created_at, updated_at)
-                VALUES 
-                (?, ?, ?, ?, ?, ?, NOW(), NOW()),
-                (?, ?, ?, ?, ?, ?, NOW(), NOW()),
-                (?, ?, ?, ?, ?, ?, NOW(), NOW())
-            ", [
-                'Breaking News Verification Request', 
-                'Request to verify a viral news story about recent government policy changes that has been circulating on social media.',
-                1, 
-                'Under Investigation', 
-                now()->subDays(2)->format('Y-m-d'),
-                'https://example.com/news-article-1',
-                
-                'Fact Check: Social Media Claim',
-                'Urgent verification needed for a claim about economic statistics that is spreading rapidly across multiple platforms.',
-                1,
-                'Pending',
-                now()->subDays(1)->format('Y-m-d'),
-                'https://example.com/social-media-post',
-                
-                'News Article Authenticity Check',
-                'Please verify the authenticity of a news article regarding recent scientific discoveries that seems questionable.',
-                1,
-                'Under Investigation',
-                now()->format('Y-m-d'),
-                null
-            ]);
-            
-            Log::info('Test inquiries created successfully');
-        } catch (\Exception $e) {
-            Log::error('Error creating test inquiries: ' . $e->getMessage());
-        }
-    }
-    /**
-     * Get inquiry count by status
-     */    public static function getInquiryCountByStatus($status = null)
-    {
-        try {
-            if ($status) {
-                if ($status === 'Pending') {
-                    // Count both explicit 'Pending' and NULL status
-                    $count = DB::select("
-                        SELECT COUNT(*) as count 
-                        FROM inquiry 
-                        WHERE final_status = 'Pending' OR final_status IS NULL
-                    ");
-                } else {
-                    // Count specific status
-                    $count = DB::select("
-                        SELECT COUNT(*) as count 
-                        FROM inquiry 
-                        WHERE final_status = ?
-                    ", [$status]);
-                }
-            } else {
-                // Count both Under Investigation, Pending, and NULL
-                $count = DB::select("
-                    SELECT COUNT(*) as count 
-                    FROM inquiry 
-                    WHERE (final_status IN ('Under Investigation', 'Pending') OR final_status IS NULL)
-                ");
-            }
 
-            return $count[0]->count ?? 0;
-        } catch (\Exception $e) {
-            Log::error('Error counting inquiries: ' . $e->getMessage());
-            return 0;
-        }
-    }
-    /**
-     * Get inquiry statistics
-     */
-    public static function getInquiryStatistics()
-    {
-        try {
-            // Get total active inquiries (Under Investigation + Pending)
-            $activeCount = self::getInquiryCountByStatus();
 
-            // Get agencies involved count
-            $agenciesInvolved = DB::select("
-                SELECT COUNT(DISTINCT a.agencyId) as count
-                FROM inquiry i
-                LEFT JOIN agency a ON i.agencyId = a.agencyId
-                WHERE i.final_status IN ('Under Investigation', 'Pending')
-            ");
+    /** BELOW IT IS A TEST FUNCTION THAT WILL ADD INQUIRY IF THERE IS NOTHING  (YOUSEF) */
 
-            // Get this week's inquiries count
-            $thisWeekCount = DB::select("
-                SELECT COUNT(*) as count
-                FROM inquiry 
-                WHERE final_status IN ('Under Investigation', 'Pending')
-                AND submission_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-            ");
+    // /**
+    //  * Create test inquiries for demonstration
+    //  */
+    // private static function createTestInquiries()
+    // {
+    //     try {
+    //         // First, create a test user if it doesn't exist
+    //         $testUser = DB::select("SELECT userId FROM publicuser WHERE userId = 1");
+    //         if (empty($testUser)) {
+    //             DB::insert("
+    //                 INSERT INTO publicuser (userId, userName, userEmail, userPassword, userContact_number)
+    //                 VALUES (1, ?, ?, ?, ?)
+    //             ", [
+    //                 'Test User',
+    //                 'testuser@example.com',
+    //                 password_hash('password', PASSWORD_DEFAULT),
+    //                 '+60123456789'
+    //             ]);
+    //             Log::info('Test user created');
+    //         }
 
-            return [
-                'active_inquiries' => $activeCount,
-                'agencies_involved' => $agenciesInvolved[0]->count ?? 0,
-                'this_week' => $thisWeekCount[0]->count ?? 0
-            ];
-        } catch (\Exception $e) {
-            Log::error('Error fetching inquiry statistics: ' . $e->getMessage());
-            return [
-                'active_inquiries' => 0,
-                'agencies_involved' => 0,
-                'this_week' => 0
-            ];
-        }
-    }
-    /**
-     * Get inquiry details by ID
-     */
-    public static function getInquiryById($inquiryId)
-    {
-        try {
-            $inquiry = DB::select("
-                SELECT 
-                    i.inquiryId,
-                    i.title,
-                    i.description,
-                    i.final_status,
-                    i.submission_date,
-                    COALESCE(a.agency_name, 'Unknown Agency') as agency_name,
-                    COALESCE(a.agencyId, 0) as agencyId,
-                    COALESCE(pu.userName, 'Unknown User') as applicant_name,
-                    COALESCE(pu.userEmail, '') as applicant_email,
-                    COALESCE(pu.userContact_number, '') as applicant_contact
-                FROM inquiry i
-                LEFT JOIN agency a ON i.agencyId = a.agencyId
-                LEFT JOIN publicuser pu ON i.userId = pu.userId
-                WHERE i.inquiryId = ?
-            ", [$inquiryId]);
+    //         // Create test inquiries
+    //         DB::insert("
+    //             INSERT INTO inquiry (title, description, userId, final_status, submission_date, evidenceUrl)
+    //             VALUES 
+    //             (?, ?, ?, ?, ?, ?),
+    //             (?, ?, ?, ?, ?, ?),
+    //             (?, ?, ?, ?, ?, ?),
+    //             (?, ?, ?, ?, ?, ?)
+    //         ", [
+    //             'Breaking News Verification Request',
+    //             'Request to verify a viral news story about recent government policy changes that has been circulating on social media.',
+    //             1,
+    //             'Under Investigation',
+    //             now()->subDays(2)->format('Y-m-d'),
+    //             'https://example.com/news-article-1',
 
-            return $inquiry[0] ?? null;
-        } catch (\Exception $e) {
-            Log::error('Error fetching inquiry details: ' . $e->getMessage());
-            return null;
-        }
-    }
-    /**
-     * Get inquiries by agency
-     */
-    public static function getInquiriesByAgency($agencyId)
-    {
-        try {
-            $inquiries = DB::select("
-                SELECT 
-                    i.inquiryId,
-                    i.title,
-                    i.description,
-                    i.final_status,
-                    i.submission_date,
-                    COALESCE(pu.userName, 'Unknown User') as applicant_name
-                FROM inquiry i
-                LEFT JOIN publicuser pu ON i.userId = pu.userId
-                WHERE i.agencyId = ? AND i.final_status IN ('Under Investigation', 'Pending')
-                ORDER BY i.submission_date DESC
-            ", [$agencyId]);
+    //             'Fact Check: Social Media Claim',
+    //             'Urgent verification needed for a claim about economic statistics that is spreading rapidly across multiple platforms.',
+    //             1,
+    //             'Under Investigation',
+    //             now()->subDays(1)->format('Y-m-d'),
+    //             'https://example.com/social-media-post',
 
-            return $inquiries;
-        } catch (\Exception $e) {
-            Log::error('Error fetching inquiries by agency: ' . $e->getMessage());
-            return [];
-        }
-    }
-    /**
-     * Check if inquiry exists and is active
-     */
-    public static function isInquiryActive($inquiryId)
-    {
-        try {
-            $count = DB::select("
-                SELECT COUNT(*) as count
-                FROM inquiry 
-                WHERE inquiryId = ? AND final_status IN ('Under Investigation', 'Pending')
-            ", [$inquiryId]);
+    //             'News Article Authenticity Check',
+    //             'Please verify the authenticity of a news article regarding recent scientific discoveries that seems questionable.',
+    //             1,
+    //             'Under Investigation',
+    //             now()->format('Y-m-d'),
+    //             null,
 
-            return ($count[0]->count ?? 0) > 0;
-        } catch (\Exception $e) {
-            Log::error('Error checking inquiry status: ' . $e->getMessage());
-            return false;
-        }
-    }
+    //             'New Inquiry Awaiting Review',
+    //             'This is a newly submitted inquiry that has not been reviewed yet by any agency.',
+    //             1,
+    //             null,
+    //             now()->format('Y-m-d'),
+    //             null
+    //         ]);
+
+    //         Log::info('Test inquiries created successfully');
+    //     } catch (\Exception $e) {
+    //         Log::error('Error creating test inquiries: ' . $e->getMessage());
+    //     }
+    // }
 }

@@ -219,28 +219,37 @@
             <a href=#>Dashboard</a>
         </div>
 
-        
+
 
         <div class="nav-divider">INQUIRY MANAGEMENT</div>
+
         <!-- Submit New Inquiry -->
-        
+        <div class="nav-item">
+            <i class="material-icons">list_alt</i>
+            <a href="{{ route('module3.status') }}">My new Inquiries</a>
+        </div>
+
         <!-- My Inquiries -->
         <div class="nav-item">
             <i class="material-icons">list_alt</i>
             <a href="{{ route('inquiry.history') }}">My Inquiries</a>
         </div>
+
         <!-- Public Inquiries -->
         <div class="nav-item">
             <i class="material-icons">public</i>
             <a href="{{ route('inquiry.public') }}">Public Inquiries</a>
         </div>
+
+        
+
         <div class="nav-divider">INFORMATION</div>
         <!-- Inquiry History (placeholder) -->
         <div class="nav-item">
             <i class="material-icons">history</i>
             <a href="#" style="color: #6c757d;">Activity History</a>
         </div>
-         <!-- My Profile -->
+        <!-- My Profile -->
         <div class="nav-item">
             <i class="material-icons">person</i>
             <a href="{{ route('user.profile') }}">My Profile</a>
@@ -251,28 +260,28 @@
 
 <!-- Top Bar -->
 <div class="top-bar">
-  <div class="profile-dropdown">
-    <div class="user-type">
-      {{ session('username', 'USER') }}
+    <div class="profile-dropdown">
+        <div class="user-type">
+            {{ session('username', 'USER') }}
+        </div>
+        <button class="profile-btn" onclick="toggleDropdown(event)">
+            @if(session('profile_picture'))
+            <img src="{{ asset('storage/' . session('profile_picture')) }}" alt="Profile" class="profile-img" />
+            @else
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=John" alt="Profile" class="profile-img" />
+            @endif
+        </button>
+        <div class="dropdown-content" id="profileDropdown">
+            <a href="{{ route('user.profile') }}"><i class="material-icons">person</i> My Profile</a>
+            <a href="{{ route('logout') }}"
+                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <i class="material-icons">exit_to_app</i> Logout
+            </a>
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
+        </div>
     </div>
-    <button class="profile-btn" onclick="toggleDropdown(event)">
-      @if(session('profile_picture'))
-        <img src="{{ asset('storage/' . session('profile_picture')) }}" alt="Profile" class="profile-img" />
-      @else
-        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=John" alt="Profile" class="profile-img" />
-      @endif
-    </button>
-    <div class="dropdown-content" id="profileDropdown">
-      <a href="{{ route('user.profile') }}"><i class="material-icons">person</i> My Profile</a>
-      <a href="{{ route('logout') }}"
-         onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-         <i class="material-icons">exit_to_app</i> Logout
-      </a>
-      <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-          @csrf
-      </form>
-    </div>
-  </div>
 </div>
 
 <!-- JS -->

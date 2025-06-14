@@ -133,12 +133,8 @@ Route::get('/', function () {
 // Display inquiry status page
 Route::get('/module3/status', [StatusController::class, 'index'])->name('module3.status');
 
-// Essential AJAX routes for inquiry data
+// API route for AJAX call - get active inquiries
 Route::get('/module3/status/get-inquiries', [StatusController::class, 'getInquiries'])->name('module3.status.inquiries');
-Route::get('/module3/status/statistics', [StatusController::class, 'getStatistics'])->name('module3.status.statistics');
-
-// Debug route for testing
-Route::get('/test/status/debug', [StatusController::class, 'debugInquiries'])->name('test.status.debug');
 
 
 // ==================

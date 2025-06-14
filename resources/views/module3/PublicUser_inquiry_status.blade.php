@@ -359,8 +359,7 @@
     <script>
         // Application configuration
         const API_ENDPOINTS = {
-            inquiries: '/module3/status/get-inquiries',
-            statistics: '/module3/status/statistics'
+            inquiries: '/module3/status/get-inquiries'
         };
 
         // Global variable to store current inquiries for modal access
@@ -456,7 +455,7 @@
                                 <div class="detail-label">Assignment Date:</div>
                                 <div class="detail-value">
                                     <i class="fas fa-calendar-check me-1"></i>
-                                    ${formatDate(inquiry.assignment_date || inquiry.submission_date)}
+                                    ${inquiry.assignment_date === 'Not Assigned' ? 'Not Assigned' : formatDate(inquiry.assignment_date)}
                                 </div>
                             </div>
                         </div>
@@ -478,7 +477,7 @@
                         </div>
                     </div>
                 </div>
-            `;            // Handle evidence section
+            `; // Handle evidence section
             const evidenceContent = template.querySelector('.evidence-content');
             let evidenceHtml = '';
 
@@ -488,7 +487,7 @@
 
             if (hasEvidenceUrl || hasEvidenceFile) {
                 evidenceHtml = '<div class="evidence-items-container d-flex gap-4">';
-                
+
                 // Check for evidence URL (link)
                 if (hasEvidenceUrl) {
                     evidenceHtml += `
@@ -500,7 +499,7 @@
                         </div>
                     `;
                 }
-                
+
                 // Check for evidence file URL (image/file)
                 if (hasEvidenceFile) {
                     evidenceHtml += `
@@ -512,7 +511,7 @@
                         </div>
                     `;
                 }
-                
+
                 evidenceHtml += '</div>';
             } else {
                 // If no evidence, show N/A
@@ -620,7 +619,7 @@
                     </div>
                     <div class="col-md-4 mb-3">
                         <strong>Assignment Date:</strong><br>
-                        <span class="text-muted"><i class="fas fa-calendar-check me-1"></i>${formatDate(inquiry.assignment_date || inquiry.submission_date)}</span>
+                        <span class="text-muted"><i class="fas fa-calendar-check me-1"></i>${inquiry.assignment_date === 'Not Assigned' ? 'Not Assigned' : formatDate(inquiry.assignment_date)}</span>
                     </div>
                 </div>
                 
@@ -642,7 +641,7 @@
                         <!-- Evidence content will be populated here -->
                     </div>
                 </div>
-            `;            // Handle evidence section in modal
+            `; // Handle evidence section in modal
             const modalEvidenceSection = document.getElementById('modalEvidenceSection');
             let evidenceHtml = '';
 
@@ -652,7 +651,7 @@
 
             if (hasEvidenceUrl || hasEvidenceFile) {
                 evidenceHtml = '<div class="evidence-items-container d-flex gap-4">';
-                
+
                 // Check for evidence URL (link)
                 if (hasEvidenceUrl) {
                     evidenceHtml += `
@@ -664,7 +663,7 @@
                         </div>
                     `;
                 }
-                
+
                 // Check for evidence file URL (image/file)
                 if (hasEvidenceFile) {
                     evidenceHtml += `
@@ -676,7 +675,7 @@
                         </div>
                     `;
                 }
-                
+
                 evidenceHtml += '</div>';
             } else {
                 // If no evidence, show N/A
