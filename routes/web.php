@@ -71,14 +71,7 @@ Route::get('/login', function () {
     ]);
 })->name('login');
 
-// COMMENTED OUT: Actual login functionality
-/*
-Route::get('/login', function () {
-    return view('module1.UserLoginView');
-})->name('login');
 
-Route::post('/login', [UserAuthController::class, 'loginPublic'])->name('login.submit');
-*/
 
 Route::get('/register', function () {
     return view('module1.UserRegisterView');
