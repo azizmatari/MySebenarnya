@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class InquiryController extends Controller
@@ -16,7 +17,8 @@ class InquiryController extends Controller
     public function create()
     {
         return view('module2.inquiry.UserCreateInquiry');
-    }    /**
+    }
+    /**
      * Store a new inquiry with evidence
      */
     public function store(Request $request)
@@ -34,7 +36,7 @@ class InquiryController extends Controller
                 'title' => $validated['news_title'],
                 'description' => $validated['detailed_info'],
                 'userId' => session('user_id', 1), // Using userId to match your DB
-                'final_status' => 'Under Investigation', // Set initial status
+                'final_status' => null, // New inquiries start as null (displayed as "Pending" in module 3)
                 'submission_date' => now()->toDateString(), // date format for your DB
                 'evidenceUrl' => $validated['evidence_links'] ?? null, // Store evidence links
                 // Removed created_at and updated_at - they don't exist in the migration
@@ -47,57 +49,34 @@ class InquiryController extends Controller
                     if ($file->isValid()) {
                         // Generate unique filename
                         $filename = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
-                        
+
                         // Store file in public/evidence directory
                         $path = $file->storeAs('evidence', $filename, 'public');
                         $filePaths[] = $path;
                     }
                 }
-                
+
                 // Update inquiry with evidence file paths (comma-separated)
                 DB::table('inquiry')
                     ->where('inquiryId', $inquiryId)
                     ->update([
                         'evidenceFileUrl' => implode(',', $filePaths)
-                        // Removed updated_at - it doesn't exist in the migration
                     ]);
             }
 
-            // Try to create assignment record
-            try {
-                DB::table('inquiryassignment')->insert([
-                    'inquiryId' => $inquiryId,
-                    'agencyId' => 1, // Default agency ID
-                    'mcmcComments' => 'New inquiry submitted and assigned for investigation',
-                    'isRejected' => 0,
-                    'mcmcId' => 1, // Default MCMC ID
-                    'assignDate' => now()->toDateString(), // Use assignDate field from migration
-                ]);
-            } catch (\Exception $e) {
-                // Assignment table might not exist, continue without it
-            }
-
-            // Try to create initial status history entry
-            try {
-                DB::table('inquirystatushistory')->insert([
-                    'inquiryId' => $inquiryId,
-                    'agencyId' => 1, // Default agency ID
-                    'status' => 'Under Investigation',
-                    'status_comment' => 'Your news verification request has been received and is now under investigation by our team'
-                    // Removed created_at and updated_at - they don't exist in the migration
-                ]);
-            } catch (\Exception $e) {
-                // Status history table might not exist, continue without it
-            }
+            // NOTE: Do NOT create assignment or status history records here!
+            // New inquiries should remain unassigned (null status = "Pending" in module 3)
+            // Assignment and status updates should only happen when MCMC processes the inquiry
 
             // Redirect to success page
             return redirect()->route('inquiry.success')->with([
                 'inquiry_id' => $inquiryId,
                 'title' => $validated['news_title']
-            ]);        } catch (\Exception $e) {
+            ]);
+        } catch (\Exception $e) {
             // Log the error for debugging
-            \Log::error('Error storing inquiry: ' . $e->getMessage());
-            
+            Log::error('Error storing inquiry: ' . $e->getMessage());
+
             // Return with error message instead of fake success
             return redirect()->back()
                 ->withInput()
@@ -115,23 +94,24 @@ class InquiryController extends Controller
         }
 
         return view('module2.inquiry.UserInquirySuccess');
-    }    /**
+    }
+    /**
      * Display user's inquiry history from database
      */    public function index()
     {
         $userId = session('user_id', 1); // Default to 1 for testing
-        
+
         // Debug: Let's see what userId we're using
         \Log::info('UserInquiryList - Current userId: ' . $userId);
-        
+
         // TEMP DEBUG: Check if we have any inquiries at all in the database
         try {
             $totalInquiries = DB::table('inquiry')->count();
             \Log::info('Total inquiries in database: ' . $totalInquiries);
-            
+
             $userInquiries = DB::table('inquiry')->where('userId', $userId)->count();
             \Log::info('Inquiries for user ' . $userId . ': ' . $userInquiries);
-            
+
             // If no inquiries for this user, show all inquiries for testing
             if ($userInquiries == 0) {
                 \Log::info('No inquiries for user ' . $userId . ', showing all inquiries for testing');
@@ -142,7 +122,7 @@ class InquiryController extends Controller
             \Log::error('Error checking database: ' . $e->getMessage());
         }
 
-        try {// Fetch user's inquiries from database with assignments and status history
+        try { // Fetch user's inquiries from database with assignments and status history
             $inquiries = DB::table('inquiry as i')
                 ->leftJoin('inquiryassignment as ia', 'i.inquiryId', '=', 'ia.inquiryId')
                 ->where('i.userId', $userId) // Filter by user ID
@@ -164,7 +144,7 @@ class InquiryController extends Controller
                     // Map database status to display status
                     $status = 'under_investigation';
                     $result = null;
-                    
+
                     if ($inquiry->final_status) {
                         switch ($inquiry->final_status) {
                             case 'True':
@@ -194,14 +174,14 @@ class InquiryController extends Controller
                                 $fileName = basename(trim($filePath));
                                 $extension = pathinfo($fileName, PATHINFO_EXTENSION);
                                 $fileSize = 'Unknown';
-                                
+
                                 // Try to get actual file size
                                 $fullPath = storage_path('app/public/' . trim($filePath));
                                 if (file_exists($fullPath)) {
                                     $sizeBytes = filesize($fullPath);
                                     $fileSize = $this->formatFileSize($sizeBytes);
                                 }
-                                
+
                                 $evidence_files[] = [
                                     'name' => $fileName,
                                     'type' => $this->getFileType($extension),
@@ -246,7 +226,8 @@ class InquiryController extends Controller
                                 'description' => 'Your news verification request was received and is under investigation'
                             ]
                         ];
-                    }                    return (object)[
+                    }
+                    return (object)[
                         'id' => $inquiry->id,
                         'title' => $inquiry->title,
                         'description' => $inquiry->description,
@@ -259,21 +240,22 @@ class InquiryController extends Controller
                         'evidence_url' => $inquiry->evidenceUrl,
                         'status_history' => $status_history
                     ];
-                });        } catch (\Exception $e) {
+                });
+        } catch (\Exception $e) {
             // Log the exception for debugging
             \Log::error('Error fetching inquiries: ' . $e->getMessage());
-            
+
             // Return empty collection instead of sample data
             $inquiries = collect([]);
         }
 
         // Debug: Log how many inquiries we found
         \Log::info('UserInquiryList - Found ' . $inquiries->count() . ' inquiries');
-        
+
         // Convert to array for proper JSON serialization in view
         $inquiriesForJs = $inquiries->values()->toArray();
         \Log::info('UserInquiryList - Converted to array with ' . count($inquiriesForJs) . ' items');
-        
+
         // Pass the collection for @if checks in view, but also pass array for JS
         return view('module2.inquiry.UserInquiryList', [
             'inquiries' => $inquiries,
@@ -312,7 +294,7 @@ class InquiryController extends Controller
         $documentTypes = ['pdf', 'doc', 'docx', 'txt'];
         $videoTypes = ['mp4', 'avi', 'mov', 'wmv'];
         $audioTypes = ['mp3', 'wav', 'aac'];
-        
+
         if (in_array($extension, $imageTypes)) {
             return 'image';
         } elseif (in_array($extension, $documentTypes)) {
@@ -343,7 +325,8 @@ class InquiryController extends Controller
             default:
                 return 'Status updated';
         }
-    }    /**
+    }
+    /**
      * Display public inquiries with anonymized user data from database
      * Following MVC pattern: Controller handles business logic, View handles presentation
      */
@@ -351,14 +334,14 @@ class InquiryController extends Controller
     {
         // Debug: Log method entry
         \Log::info('PublicInquiries method called');
-        
+
         try {
             // Debug: Test database connection and check for data
             $totalInquiries = DB::table('inquiry')->count();
             $completedInquiries = DB::table('inquiry')->whereIn('final_status', ['True', 'Fake'])->count();
-            
+
             \Log::info("Database check - Total inquiries: $totalInquiries, Completed: $completedInquiries");
-            
+
             // If no completed inquiries, log sample data
             if ($completedInquiries === 0) {
                 $sampleInquiries = DB::table('inquiry')->take(3)->get();
@@ -391,10 +374,10 @@ class InquiryController extends Controller
             $publicInquiries = $rawInquiries->map(function ($inquiry) {
                 // Process evidence files
                 $evidence_files = $this->processEvidenceFiles($inquiry->evidenceFileUrl);
-                
+
                 // Anonymize username for public display
                 $anonymized_user = $this->anonymizeUsername($inquiry->username);
-                
+
                 // Prepare clean data object for view
                 return (object)[
                     'id' => $inquiry->id,
@@ -414,12 +397,11 @@ class InquiryController extends Controller
 
             // Log for debugging
             \Log::info('Public Inquiries - Processed ' . $publicInquiries->count() . ' completed inquiries');
-
         } catch (\Exception $e) {
             // Log the exception for debugging
             \Log::error('Error fetching public inquiries: ' . $e->getMessage());
             \Log::error('Stack trace: ' . $e->getTraceAsString());
-            
+
             // Return empty collection - no sample data
             $publicInquiries = collect([]);
         }
@@ -438,7 +420,7 @@ class InquiryController extends Controller
     private function processEvidenceFiles($evidenceFileUrl)
     {
         $evidence_files = [];
-        
+
         if ($evidenceFileUrl) {
             $filePaths = explode(',', $evidenceFileUrl);
             foreach ($filePaths as $filePath) {
@@ -446,7 +428,7 @@ class InquiryController extends Controller
                 if (!empty($filePath)) {
                     $fileName = basename($filePath);
                     $extension = pathinfo($fileName, PATHINFO_EXTENSION);
-                    
+
                     // Get real file size
                     $fileSize = 'Unknown';
                     $fullPath = storage_path('app/public/' . $filePath);
@@ -454,7 +436,7 @@ class InquiryController extends Controller
                         $sizeBytes = filesize($fullPath);
                         $fileSize = $this->formatFileSize($sizeBytes);
                     }
-                    
+
                     $evidence_files[] = [
                         'name' => $fileName,
                         'type' => $this->getFileType($extension),
@@ -465,7 +447,7 @@ class InquiryController extends Controller
                 }
             }
         }
-        
+
         return $evidence_files;
     }
 
@@ -478,7 +460,7 @@ class InquiryController extends Controller
         if (!$username) {
             return 'Anonymous User';
         }
-        
+
         // Create consistent anonymized identifier
         $hash = substr(md5($username), 0, 4);
         return 'User***' . strtoupper($hash);
@@ -539,7 +521,7 @@ class InquiryController extends Controller
             // Check if the file exists in the inquiry's evidence files
             $evidenceFiles = explode(',', $inquiry->evidenceFileUrl);
             $requestedFile = null;
-            
+
             foreach ($evidenceFiles as $filePath) {
                 $filePath = trim($filePath);
                 if (basename($filePath) === $filename) {
@@ -561,7 +543,6 @@ class InquiryController extends Controller
 
             // Return the file
             return response()->file($fullPath);
-
         } catch (\Exception $e) {
             \Log::error('Error accessing evidence file: ' . $e->getMessage());
             abort(500, 'Unable to access evidence file');
@@ -575,7 +556,7 @@ class InquiryController extends Controller
     {
         try {
             $userId = session('user_id', 1);
-            
+
             // Get the inquiry and verify user ownership
             $inquiry = DB::table('inquiry')
                 ->where('inquiryId', $inquiryId)
@@ -589,7 +570,7 @@ class InquiryController extends Controller
             // Check if the requested file exists in the inquiry's evidence files
             $evidenceFiles = explode(',', $inquiry->evidenceFileUrl);
             $targetFile = null;
-            
+
             foreach ($evidenceFiles as $filePath) {
                 $filePath = trim($filePath);
                 if (basename($filePath) === $filename) {
@@ -603,14 +584,13 @@ class InquiryController extends Controller
             }
 
             $fullPath = storage_path('app/public/' . $targetFile);
-            
+
             if (!file_exists($fullPath)) {
                 abort(404, 'Evidence file does not exist on server');
             }
 
             // Return the file
             return response()->file($fullPath);
-
         } catch (\Exception $e) {
             \Log::error('Error viewing evidence file: ' . $e->getMessage());
             abort(500, 'Unable to access evidence file');
@@ -626,7 +606,7 @@ class InquiryController extends Controller
             // Test basic database connection
             $inquiryCount = DB::table('inquiry')->count();
             $completedCount = DB::table('inquiry')->whereIn('final_status', ['True', 'Fake'])->count();
-            
+
             // Test query
             $rawData = DB::table('inquiry as i')
                 ->leftJoin('inquiryassignment as ia', 'i.inquiryId', '=', 'ia.inquiryId')
@@ -644,7 +624,7 @@ class InquiryController extends Controller
                     'u.userName as username'
                 )
                 ->get();
-            
+
             return response()->json([
                 'total_inquiries' => $inquiryCount,
                 'completed_inquiries' => $completedCount,
@@ -654,79 +634,6 @@ class InquiryController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-        }
-    }
-
-    /**
-     * Create test data for public inquiries page
-     */
-    public function createTestData()
-    {
-        try {
-            // First, create a test user if doesn't exist
-            $testUserId = DB::table('publicuser')->insertGetId([
-                'userName' => 'Test User',
-                'userEmail' => 'test@example.com',
-                'userPassword' => bcrypt('password'),
-                'userContact_number' => '1234567890'
-            ]);
-
-            // Create some completed inquiries for public display
-            $inquiry1 = DB::table('inquiry')->insertGetId([
-                'title' => 'COVID-19 Vaccine Safety',
-                'description' => 'Verification request about recent claims regarding COVID-19 vaccine side effects circulating on social media platforms.',
-                'userId' => $testUserId,
-                'final_status' => 'True',
-                'submission_date' => now()->subDays(5)->format('Y-m-d'),
-                'evidenceUrl' => 'https://example.com/covid-article',
-                'evidenceFileUrl' => null
-            ]);
-
-            $inquiry2 = DB::table('inquiry')->insertGetId([
-                'title' => 'Economic Data Misinformation',
-                'description' => 'Claims about unemployment statistics that appear to be misleading and need fact-checking verification.',
-                'userId' => $testUserId,
-                'final_status' => 'Fake',
-                'submission_date' => now()->subDays(3)->format('Y-m-d'),
-                'evidenceUrl' => null,
-                'evidenceFileUrl' => 'evidence/test1.pdf,evidence/test2.jpg'
-            ]);
-
-            $inquiry3 = DB::table('inquiry')->insertGetId([
-                'title' => 'Climate Change Research',
-                'description' => 'Verification of recent scientific claims about climate change data that need professional review.',
-                'userId' => $testUserId,
-                'final_status' => 'True',
-                'submission_date' => now()->subDays(1)->format('Y-m-d'),
-                'evidenceUrl' => 'https://example.com/climate-study',
-                'evidenceFileUrl' => null
-            ]);
-
-            // Create assignment records
-            foreach ([$inquiry1, $inquiry2, $inquiry3] as $inquiryId) {
-                DB::table('inquiryassignment')->insert([
-                    'inquiryId' => $inquiryId,
-                    'agencyId' => 1,
-                    'mcmcComments' => 'Investigation completed by our verification team.',
-                    'isRejected' => false,
-                    'mcmcId' => 1,
-                    'assignDate' => now()->subDays(2)->format('Y-m-d')
-                ]);
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Test data created successfully',
-                'inquiries_created' => 3,
-                'test_user_id' => $testUserId
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

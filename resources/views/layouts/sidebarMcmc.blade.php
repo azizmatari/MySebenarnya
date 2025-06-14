@@ -216,34 +216,39 @@
     <div class="sidebar-nav">
         <div class="nav-item active">
             <i class="material-icons">dashboard</i>
-            <a href=#>Dashboard</a>
+            <a href="{{ route('mcmc.dashboard') }}">Dashboard</a>
         </div>
-
-        
 
         <div class="nav-divider">INQUIRY MANAGEMENT</div>
-        <!-- Submit New Inquiry -->
         
-        <!-- My Inquiries -->
+        <!-- New Inquiries for Review -->
         <div class="nav-item">
-            <i class="material-icons">list_alt</i>
-            <a href="{{ route('inquiry.history') }}">My Inquiries</a>
+            <i class="material-icons">new_releases</i>
+            <a href="{{ route('mcmc.inquiries') }}">New Inquiries</a>
         </div>
-        <!-- Public Inquiries -->
+
+        <!-- inquriy report for Review -->
         <div class="nav-item">
-            <i class="material-icons">public</i>
-            <a href="{{ route('inquiry.public') }}">Public Inquiries</a>
+            <i class="material-icons">assessment</i>
+            <a href="{{ route('reports.index') }}">Inquiry Report</a>
         </div>
-        <div class="nav-divider">INFORMATION</div>
-        <!-- Inquiry History (placeholder) -->
-        <div class="nav-item">
-            <i class="material-icons">history</i>
-            <a href="#" style="color: #6c757d;">Activity History</a>
-        </div>
-         <!-- My Profile -->
+        
+<!-- option 4 -->
+    <div class="nav-item"><i class="material-icons">person_add</i><a href="{{ route('register.agency.view') }}">Register Agency</a></div>
+  </div>
+
+        <!-- My Profile -->
         <div class="nav-item">
             <i class="material-icons">person</i>
             <a href="{{ route('user.profile') }}">My Profile</a>
+        </div>
+        
+        <div class="nav-divider">TESTING</div>
+        
+        <!-- Create Test Data -->
+        <div class="nav-item">
+            <i class="material-icons">science</i>
+            <a href="{{ route('mcmc.create.test.data') }}">Create Test Data</a>
         </div>
     </div>
 </div>

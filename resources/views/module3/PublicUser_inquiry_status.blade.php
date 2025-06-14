@@ -357,9 +357,18 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        /*
+         * Module 3 Default Behavior for Inquiry Status:
+         * - New inquiries are inserted with NULL final_status in database
+         * - System automatically converts NULL/empty status to "Pending" for display
+         * - Only active inquiries (Pending, Under Investigation) are shown
+         * - Completed inquiries (True, Fake, etc.) are handled in other modules
+         */
+
         // Application configuration
         const API_ENDPOINTS = {
-            inquiries: '/module3/status/get-inquiries'
+            inquiries: '/module3/status/get-inquiries',
+            statistics: '/module3/status/statistics'
         };
 
         // Global variable to store current inquiries for modal access
@@ -367,6 +376,7 @@
 
         // Load inquiries when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, starting to load inquiries...');
             loadInquiries();
         });
 
@@ -386,7 +396,19 @@
 
                 const data = await response.json();
                 console.log('Received data:', data);
-                displayInquiries(data.inquiries || data);
+
+                // Handle both direct array and nested object with inquiries property
+                let inquiries = data;
+                if (data.inquiries) {
+                    inquiries = data.inquiries;
+                }
+
+                if (!Array.isArray(inquiries)) {
+                    console.error('Expected array of inquiries, got:', typeof inquiries);
+                    throw new Error('Invalid data format received');
+                }
+
+                displayInquiries(inquiries);
             } catch (error) {
                 console.error('Error loading inquiries:', error);
                 showError('Failed to load inquiries. Please try again later.');
@@ -398,20 +420,38 @@
             // Store inquiries globally for modal access
             currentInquiries = inquiries;
 
-            if (inquiries.length === 0) {
+            console.log('Display function called with:', inquiries);
+            console.log('Type:', typeof inquiries);
+            console.log('Is Array:', Array.isArray(inquiries));
+            console.log('Length:', inquiries ? inquiries.length : 'undefined');
+
+            if (!inquiries || inquiries.length === 0) {
                 showNoInquiries();
                 return;
             }
 
             let html = '';
-            inquiries.forEach(inquiry => {
+            inquiries.forEach((inquiry, index) => {
+                console.log(`Processing inquiry ${index}:`, inquiry);
                 html += createInquiryCard(inquiry);
             });
 
             container.innerHTML = html;
+            console.log('Successfully displayed', inquiries.length, 'inquiries');
         } // Function to create inquiry card HTML
         function createInquiryCard(inquiry) {
-            const statusClass = inquiry.final_status.toLowerCase().replace(' ', '-');
+            // Safely get values with fallbacks
+            const title = inquiry.title || 'Untitled Inquiry';
+            const description = inquiry.description || 'No description available';
+            const finalStatus = inquiry.final_status || 'Pending';
+            const submissionDate = inquiry.submission_date || '';
+            const agencyName = inquiry.agency_name || 'Not Assigned';
+            const applicantName = inquiry.applicant_name || 'Anonymous';
+            const evidenceUrl = inquiry.evidence_url || null;
+            const evidenceFileUrl = inquiry.evidence_file_url || null;
+            const assignmentDate = inquiry.assignment_date || submissionDate;
+
+            const statusClass = finalStatus.toLowerCase().replace(' ', '-');
 
             // Handle evidence section
             const template = document.createElement('div');
@@ -420,12 +460,12 @@
                     <div class="inquiry-header">
                         <h5 class="inquiry-title">
                             <i class="fas fa-file-alt me-2"></i>
-                            ${escapeHtml(inquiry.title)}
+                            ${escapeHtml(title)}
                         </h5>
                         <div class="d-flex align-items-center gap-3">
                             <span class="badge status-badge ${statusClass}">
                                 <i class="fas fa-clock me-1"></i>
-                                ${escapeHtml(inquiry.final_status)}
+                                ${escapeHtml(finalStatus)}
                             </span>
                             <button class="btn btn-outline-primary btn-sm" onclick="viewDetails(${inquiry.inquiryId})">
                                 <i class="fas fa-eye me-1"></i>View
@@ -439,7 +479,7 @@
                                 <div class="detail-label">Applied Date:</div>
                                 <div class="detail-value">
                                     <i class="fas fa-calendar me-1"></i>
-                                    ${formatDate(inquiry.submission_date)}
+                                    ${formatDate(submissionDate)}
                                 </div>
                             </div>
                             
@@ -447,7 +487,7 @@
                                 <div class="detail-label">Assigned Agency:</div>
                                 <div class="detail-value">
                                     <i class="fas fa-building me-1"></i>
-                                    <span class="agency-tag">${escapeHtml(inquiry.agency_name)}</span>
+                                    <span class="agency-tag">${escapeHtml(agencyName)}</span>
                                 </div>
                             </div>
                             
@@ -455,7 +495,7 @@
                                 <div class="detail-label">Assignment Date:</div>
                                 <div class="detail-value">
                                     <i class="fas fa-calendar-check me-1"></i>
-                                    ${inquiry.assignment_date === 'Not Assigned' ? 'Not Assigned' : formatDate(inquiry.assignment_date)}
+                                    ${formatDate(assignmentDate)}
                                 </div>
                             </div>
                         </div>
@@ -463,7 +503,7 @@
                         <div class="description-section">
                             <div class="detail-label">Description:</div>
                             <div class="detail-value">
-                                <span class="description-text">${truncateText(escapeHtml(inquiry.description), 50)}</span>
+                                <span class="description-text">${truncateText(escapeHtml(description), 50)}</span>
                             </div>
                         </div>
                         
@@ -482,8 +522,8 @@
             let evidenceHtml = '';
 
             // Create a container for evidence items to display side by side
-            const hasEvidenceUrl = inquiry.evidence_url;
-            const hasEvidenceFile = inquiry.evidence_file_url;
+            const hasEvidenceUrl = evidenceUrl && evidenceUrl.trim() !== '';
+            const hasEvidenceFile = evidenceFileUrl && evidenceFileUrl.trim() !== '';
 
             if (hasEvidenceUrl || hasEvidenceFile) {
                 evidenceHtml = '<div class="evidence-items-container d-flex gap-4">';
@@ -493,7 +533,7 @@
                     evidenceHtml += `
                         <div class="evidence-item">
                             <strong>Evidence Link:</strong><br>
-                            <a href="${escapeHtml(inquiry.evidence_url)}" target="_blank" class="evidence-link">
+                            <a href="${escapeHtml(evidenceUrl)}" target="_blank" class="evidence-link">
                                 <i class="fas fa-external-link-alt me-1"></i>View Evidence Link
                             </a>
                         </div>
@@ -505,7 +545,7 @@
                     evidenceHtml += `
                         <div class="evidence-item">
                             <strong>Evidence File:</strong><br>
-                            <a href="${escapeHtml(inquiry.evidence_file_url)}" target="_blank" class="evidence-link">
+                            <a href="${escapeHtml(evidenceFileUrl)}" target="_blank" class="evidence-link">
                                 <i class="fas fa-file-image me-1"></i>View Evidence File
                             </a>
                         </div>
@@ -540,7 +580,7 @@
         function showError(message) {
             const container = document.getElementById('inquiry-container');
             container.innerHTML = `
-                <div class="error-message">
+                <div class="alert alert-danger" role="alert">
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     ${escapeHtml(message)}
                     <button class="btn btn-sm btn-outline-danger ms-2" onclick="loadInquiries()">
@@ -569,13 +609,18 @@
         }
 
         function formatDate(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
+            if (!dateString || dateString === 'Not Assigned') return 'Not Available';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'Invalid Date';
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            } catch (e) {
+                return 'Invalid Date';
+            }
         }
 
         function escapeHtml(text) {
@@ -594,6 +639,17 @@
                 return;
             }
 
+            // Safely get values with fallbacks
+            const title = inquiry.title || 'Untitled Inquiry';
+            const description = inquiry.description || 'No description available';
+            const finalStatus = inquiry.final_status || 'Pending';
+            const submissionDate = inquiry.submission_date || '';
+            const agencyName = inquiry.agency_name || 'Not Assigned';
+            const applicantName = inquiry.applicant_name || 'Anonymous';
+            const evidenceUrl = inquiry.evidence_url || null;
+            const evidenceFileUrl = inquiry.evidence_file_url || null;
+            const assignmentDate = inquiry.assignment_date || submissionDate;
+
             // Populate modal with full inquiry details
             const modalBody = document.getElementById('modalBody');
             modalBody.innerHTML = `
@@ -604,34 +660,34 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <strong>Status:</strong><br>
-                        <span class="badge status-badge ${inquiry.final_status.toLowerCase().replace(' ', '-')}">${escapeHtml(inquiry.final_status)}</span>
+                        <span class="badge status-badge ${finalStatus.toLowerCase().replace(' ', '-')}">${escapeHtml(finalStatus)}</span>
                     </div>
                 </div>
                 
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <strong>Applied Date:</strong><br>
-                        <span class="text-muted"><i class="fas fa-calendar me-1"></i>${formatDate(inquiry.submission_date)}</span>
+                        <span class="text-muted"><i class="fas fa-calendar me-1"></i>${formatDate(submissionDate)}</span>
                     </div>
                     <div class="col-md-4 mb-3">
                         <strong>Assigned Agency:</strong><br>
-                        <span class="agency-tag">${escapeHtml(inquiry.agency_name)}</span>
+                        <span class="agency-tag">${escapeHtml(agencyName)}</span>
                     </div>
                     <div class="col-md-4 mb-3">
                         <strong>Assignment Date:</strong><br>
-                        <span class="text-muted"><i class="fas fa-calendar-check me-1"></i>${inquiry.assignment_date === 'Not Assigned' ? 'Not Assigned' : formatDate(inquiry.assignment_date)}</span>
+                        <span class="text-muted"><i class="fas fa-calendar-check me-1"></i>${formatDate(assignmentDate)}</span>
                     </div>
                 </div>
                 
                 <div class="mb-3">
                     <strong>Title:</strong><br>
-                    <span class="text-muted">${escapeHtml(inquiry.title)}</span>
+                    <span class="text-muted">${escapeHtml(title)}</span>
                 </div>
                 
                 <div class="mb-3">
                     <strong>Full Description:</strong><br>
                     <div class="p-3 bg-light rounded">
-                        ${escapeHtml(inquiry.description)}
+                        ${escapeHtml(description)}
                     </div>
                 </div>
                 
@@ -646,8 +702,8 @@
             let evidenceHtml = '';
 
             // Create a container for evidence items to display side by side
-            const hasEvidenceUrl = inquiry.evidence_url;
-            const hasEvidenceFile = inquiry.evidence_file_url;
+            const hasEvidenceUrl = evidenceUrl && evidenceUrl.trim() !== '';
+            const hasEvidenceFile = evidenceFileUrl && evidenceFileUrl.trim() !== '';
 
             if (hasEvidenceUrl || hasEvidenceFile) {
                 evidenceHtml = '<div class="evidence-items-container d-flex gap-4">';
@@ -657,7 +713,7 @@
                     evidenceHtml += `
                         <div class="evidence-item">
                             <strong>Evidence Link:</strong><br>
-                            <a href="${escapeHtml(inquiry.evidence_url)}" target="_blank" class="evidence-link">
+                            <a href="${escapeHtml(evidenceUrl)}" target="_blank" class="evidence-link">
                                 <i class="fas fa-external-link-alt me-1"></i>View Evidence Link
                             </a>
                         </div>
@@ -669,7 +725,7 @@
                     evidenceHtml += `
                         <div class="evidence-item">
                             <strong>Evidence File:</strong><br>
-                            <a href="${escapeHtml(inquiry.evidence_file_url)}" target="_blank" class="evidence-link">
+                            <a href="${escapeHtml(evidenceFileUrl)}" target="_blank" class="evidence-link">
                                 <i class="fas fa-file-image me-1"></i>View Evidence File
                             </a>
                         </div>

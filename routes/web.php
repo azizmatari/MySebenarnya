@@ -6,7 +6,9 @@ use App\Http\Controllers\SharedControllers\DashboardController;
 use App\Http\Controllers\module1\UserProfileController;
 use App\Http\Controllers\module1\UserAuthController;
 use App\Http\Controllers\module3\StatusController;
+use App\Http\Controllers\module3\assignController;
 use App\Http\Controllers\module2\InquiryController;
+use App\Http\Controllers\module2\MCMCController;
 use App\Http\Controllers\module1\RegisterAgencyController;
 
 // ==================
@@ -119,13 +121,6 @@ Route::get('/', function () {
 
 
 
-
-
-
-
-
-
-
 // ==================
 // Module 3 - Status Routes
 // ==================
@@ -133,8 +128,38 @@ Route::get('/', function () {
 // Display inquiry status page
 Route::get('/module3/status', [StatusController::class, 'index'])->name('module3.status');
 
-// API route for AJAX call - get active inquiries
-Route::get('/module3/status/get-inquiries', [StatusController::class, 'getInquiries'])->name('module3.status.inquiries');
+// AJAX endpoint to get inquiries data
+Route::get('/module3/status/get-inquiries', [StatusController::class, 'getInquiries'])->name('module3.status.get-inquiries');
+
+// MCMC assignment routes (moved to module3)
+Route::get('/module3/mcmc/assign/{inquiryId}', [assignController::class, 'showAssignmentForm'])->name('module3.mcmc.assign');
+
+// Process MCMC assignment
+Route::post('/module3/mcmc/assign', [assignController::class, 'processAssignment'])->name('module3.mcmc.process.assign');
+
+// AJAX endpoint to get agencies by type
+Route::post('/module3/mcmc/agencies-by-type', [assignController::class, 'getAgenciesByType'])->name('module3.mcmc.agencies.by.type');
+
+
+
+// ==================
+// Module 2 - MCMC Routes (for reviewing and validating inquiries)
+// ==================
+
+// MCMC view new inquiries for review
+Route::get('/mcmc/inquiries', [MCMCController::class, 'viewNewInquiries'])->name('mcmc.inquiries');
+
+// MCMC validate inquiry (assign to agency)
+Route::post('/mcmc/inquiries/validate', [MCMCController::class, 'validateInquiry'])->name('mcmc.validate.inquiry');
+
+// MCMC reject inquiry
+Route::post('/mcmc/inquiries/reject', [MCMCController::class, 'rejectInquiry'])->name('mcmc.reject.inquiry');
+
+// MCMC view inquiry details
+Route::get('/mcmc/inquiries/{inquiryId}', [MCMCController::class, 'viewInquiryDetails'])->name('mcmc.inquiry.details');
+
+// Create test data for MCMC
+Route::get('/mcmc/create-test-data', [MCMCController::class, 'createMCMCTestData'])->name('mcmc.create.test.data');
 
 
 // ==================
@@ -175,3 +200,21 @@ Route::get('/test/inquiry', [InquiryController::class, 'index'])->name('test.inq
 
 // Test route for modal functionality
 Route::get('/test/inquiry/modals', [InquiryController::class, 'testInquiryModals'])->name('test.inquiry.modals');
+
+
+// ==================
+// Module 3 - Report Routes (MCMC Reporting System)
+// ==================
+
+// Main report dashboard
+Route::get('/reports', [App\Http\Controllers\module3\ReportController::class, 'index'])->name('reports.index');
+
+// AJAX endpoints for reports
+Route::get('/reports/agency-assignments', [App\Http\Controllers\module3\ReportController::class, 'getAgencyAssignmentReport'])->name('reports.agency.assignments');
+Route::get('/reports/filtered-inquiries', [App\Http\Controllers\module3\ReportController::class, 'getFilteredInquiries'])->name('reports.filtered.inquiries');
+Route::get('/reports/inquiry-trends', [App\Http\Controllers\module3\ReportController::class, 'getInquiryTrends'])->name('reports.inquiry.trends');
+Route::get('/reports/agency-performance', [App\Http\Controllers\module3\ReportController::class, 'getAgencyPerformance'])->name('reports.agency.performance');
+
+// Export routes
+Route::post('/reports/export-pdf', [App\Http\Controllers\module3\ReportController::class, 'exportToPDF'])->name('reports.export.pdf');
+Route::post('/reports/export-excel', [App\Http\Controllers\module3\ReportController::class, 'exportToExcel'])->name('reports.export.excel');

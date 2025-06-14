@@ -11,7 +11,14 @@ class StatusModule extends Model
     /**
      * Get all inquiries with "Under Investigation" or "Pending" status
      * Including agency and user information
-     */    public static function getActiveInquiries()
+     * 
+     * Default Module 3 Behavior:
+     * - New inquiries are inserted with NULL final_status in database
+     * - This method converts NULL/empty status to "Pending" for display
+     * - Only shows active inquiries (Pending, Under Investigation)
+     * - Completed inquiries (True, Fake) are handled by other modules
+     */
+    public static function getActiveInquiries()
     {
         try {
             // First, check if there are any inquiries in the database
@@ -31,7 +38,10 @@ class StatusModule extends Model
                     i.inquiryId,
                     i.title,
                     i.description,
-                    COALESCE(i.final_status, 'Pending') as final_status,
+                    CASE 
+                        WHEN i.final_status IS NULL OR i.final_status = '' THEN 'Pending'
+                        ELSE i.final_status
+                    END as final_status,
                     i.submission_date,
                     COALESCE(a.agency_name, 'Not Assigned') as agency_name,
                     COALESCE(pu.userName, 'Anonymous User') as applicant_name,
@@ -46,6 +56,7 @@ class StatusModule extends Model
                 LEFT JOIN inquiryassignment ia ON i.inquiryId = ia.inquiryId
                 LEFT JOIN agency a ON ia.agencyId = a.agencyId
                 WHERE (i.final_status = 'Under Investigation' 
+                       OR i.final_status = 'Pending'
                        OR i.final_status IS NULL 
                        OR i.final_status = '')
                 ORDER BY i.submission_date DESC
@@ -64,72 +75,68 @@ class StatusModule extends Model
         }
     }
 
+    //     /**
+    //      * Create test inquiries for demonstration
+    //      */
+    //     private static function createTestInquiries()
+    //     {
+    //         try {
+    //             // First, create a test user if it doesn't exist
+    //             $testUser = DB::select("SELECT userId FROM publicuser WHERE userId = 1");
+    //             if (empty($testUser)) {
+    //                 DB::insert("
+    //                     INSERT INTO publicuser (userId, userName, userEmail, userPassword, userContact_number)
+    //                     VALUES (1, ?, ?, ?, ?)
+    //                 ", [
+    //                     'Test User',
+    //                     'testuser@example.com',
+    //                     password_hash('password', PASSWORD_DEFAULT),
+    //                     '+60123456789'
+    //                 ]);
+    //                 Log::info('Test user created');
+    //             }
 
-
-    /** BELOW IT IS A TEST FUNCTION THAT WILL ADD INQUIRY IF THERE IS NOTHING  (YOUSEF) */
-
-    // /**
-    //  * Create test inquiries for demonstration
-    //  */
-    // private static function createTestInquiries()
-    // {
-    //     try {
-    //         // First, create a test user if it doesn't exist
-    //         $testUser = DB::select("SELECT userId FROM publicuser WHERE userId = 1");
-    //         if (empty($testUser)) {
+    //             // Create test inquiries
     //             DB::insert("
-    //                 INSERT INTO publicuser (userId, userName, userEmail, userPassword, userContact_number)
-    //                 VALUES (1, ?, ?, ?, ?)
+    //                 INSERT INTO inquiry (title, description, userId, final_status, submission_date, evidenceUrl)
+    //                 VALUES 
+    //                 (?, ?, ?, ?, ?, ?),
+    //                 (?, ?, ?, ?, ?, ?),
+    //                 (?, ?, ?, ?, ?, ?),
+    //                 (?, ?, ?, ?, ?, ?)
     //             ", [
-    //                 'Test User',
-    //                 'testuser@example.com',
-    //                 password_hash('password', PASSWORD_DEFAULT),
-    //                 '+60123456789'
+    //                 'Breaking News Verification Request',
+    //                 'Request to verify a viral news story about recent government policy changes that has been circulating on social media.',
+    //                 1,
+    //                 'Under Investigation',
+    //                 date('Y-m-d', strtotime('-2 days')),
+    //                 'https://example.com/news-article-1',
+
+    //                 'Fact Check: Social Media Claim',
+    //                 'Urgent verification needed for a claim about economic statistics that is spreading rapidly across multiple platforms.',
+    //                 1,
+    //                 'Under Investigation',
+    //                 date('Y-m-d', strtotime('-1 day')),
+    //                 'https://example.com/social-media-post',
+
+    //                 'News Article Authenticity Check',
+    //                 'Please verify the authenticity of a news article regarding recent scientific discoveries that seems questionable.',
+    //                 1,
+    //                 'Under Investigation',
+    //                 date('Y-m-d'),
+    //                 null,
+
+    //                 'New Inquiry Awaiting Review',
+    //                 'This is a newly submitted inquiry that has not been reviewed yet by any agency.',
+    //                 1,
+    //                 null,
+    //                 date('Y-m-d'),
+    //                 null
     //             ]);
-    //             Log::info('Test user created');
+
+    //             Log::info('Test inquiries created successfully');
+    //         } catch (\Exception $e) {
+    //             Log::error('Error creating test inquiries: ' . $e->getMessage());
     //         }
-
-    //         // Create test inquiries
-    //         DB::insert("
-    //             INSERT INTO inquiry (title, description, userId, final_status, submission_date, evidenceUrl)
-    //             VALUES 
-    //             (?, ?, ?, ?, ?, ?),
-    //             (?, ?, ?, ?, ?, ?),
-    //             (?, ?, ?, ?, ?, ?),
-    //             (?, ?, ?, ?, ?, ?)
-    //         ", [
-    //             'Breaking News Verification Request',
-    //             'Request to verify a viral news story about recent government policy changes that has been circulating on social media.',
-    //             1,
-    //             'Under Investigation',
-    //             now()->subDays(2)->format('Y-m-d'),
-    //             'https://example.com/news-article-1',
-
-    //             'Fact Check: Social Media Claim',
-    //             'Urgent verification needed for a claim about economic statistics that is spreading rapidly across multiple platforms.',
-    //             1,
-    //             'Under Investigation',
-    //             now()->subDays(1)->format('Y-m-d'),
-    //             'https://example.com/social-media-post',
-
-    //             'News Article Authenticity Check',
-    //             'Please verify the authenticity of a news article regarding recent scientific discoveries that seems questionable.',
-    //             1,
-    //             'Under Investigation',
-    //             now()->format('Y-m-d'),
-    //             null,
-
-    //             'New Inquiry Awaiting Review',
-    //             'This is a newly submitted inquiry that has not been reviewed yet by any agency.',
-    //             1,
-    //             null,
-    //             now()->format('Y-m-d'),
-    //             null
-    //         ]);
-
-    //         Log::info('Test inquiries created successfully');
-    //     } catch (\Exception $e) {
-    //         Log::error('Error creating test inquiries: ' . $e->getMessage());
     //     }
-    // }
 }

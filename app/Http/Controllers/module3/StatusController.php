@@ -27,6 +27,11 @@ class StatusController extends Controller
     /**
      * Get active inquiries via AJAX
      * This method returns JSON data for the frontend
+     * 
+     * Default behavior for Module 3:
+     * - New inquiries are inserted with NULL final_status in database
+     * - System automatically displays NULL status as "Pending"
+     * - Only shows inquiries with status: NULL, empty, "Pending", or "Under Investigation"
      */
     public function getInquiries(): JsonResponse
     {
@@ -34,8 +39,16 @@ class StatusController extends Controller
             // Get active inquiries from the model
             $inquiries = StatusModule::getActiveInquiries();
 
-            // Return JSON response
-            return response()->json($inquiries, 200);
+            // Convert stdClass objects to arrays for proper JSON serialization
+            $inquiriesArray = [];
+            foreach ($inquiries as $inquiry) {
+                $inquiriesArray[] = (array) $inquiry;
+            }
+
+            Log::info('Sending inquiries to frontend: ' . count($inquiriesArray) . ' inquiries');
+
+            // Return JSON response with proper structure
+            return response()->json($inquiriesArray, 200);
         } catch (\Exception $e) {
             Log::error('Error fetching inquiries: ' . $e->getMessage());
             return response()->json([
@@ -44,4 +57,26 @@ class StatusController extends Controller
             ], 500);
         }
     }
+
+    //     /**
+    //      * Test method to check StatusModule directly
+    //      */
+    //     public function testStatusModule()
+    //     {
+    //         try {
+    //             $inquiries = StatusModule::getActiveInquiries();
+
+    //             return response()->json([
+    //                 'success' => true,
+    //                 'count' => count($inquiries),
+    //                 'inquiries' => $inquiries
+    //             ]);
+    //         } catch (\Exception $e) {
+    //             Log::error('Error testing StatusModule: ' . $e->getMessage());
+    //             return response()->json([
+    //                 'error' => $e->getMessage(),
+    //                 'trace' => $e->getTraceAsString()
+    //             ], 500);
+    //         }
+    //     }
 }
