@@ -225,22 +225,13 @@
         <!-- Submit New Inquiry -->
         
         <!-- My Inquiries -->
-        <div class="nav-item">
-            <i class="material-icons">list_alt</i>
-            <a href="{{ route('inquiry.history') }}">My Inquiries</a>
-        </div>
+        
         <!-- Public Inquiries -->
-        <div class="nav-item">
-            <i class="material-icons">public</i>
-            <a href="{{ route('inquiry.public') }}">Public Inquiries</a>
-        </div>
+        
         <div class="nav-divider">INFORMATION</div>
         <!-- Inquiry History (placeholder) -->
-        <div class="nav-item">
-            <i class="material-icons">history</i>
-            <a href="#" style="color: #6c757d;">Activity History</a>
-        </div>
-         <!-- My Profile -->
+        
+         <!-- My Profile mod1-->
         <div class="nav-item">
             <i class="material-icons">person</i>
             <a href="{{ route('user.profile') }}">My Profile</a>

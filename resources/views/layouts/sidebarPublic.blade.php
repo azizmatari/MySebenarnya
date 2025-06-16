@@ -224,22 +224,13 @@
         <div class="nav-divider">INQUIRY MANAGEMENT</div>
 
         <!-- Submit New Inquiry -->
-        <div class="nav-item">
-            <i class="material-icons">list_alt</i>
-            <a href="{{ route('module3.status') }}">My new Inquiries</a>
-        </div>
+        
 
         <!-- My Inquiries -->
-        <div class="nav-item">
-            <i class="material-icons">list_alt</i>
-            <a href="{{ route('inquiry.history') }}">My Inquiries</a>
-        </div>
+        
 
         <!-- Public Inquiries -->
-        <div class="nav-item">
-            <i class="material-icons">public</i>
-            <a href="{{ route('inquiry.public') }}">Public Inquiries</a>
-        </div>
+        
 
         
 
@@ -249,7 +240,7 @@
             <i class="material-icons">history</i>
             <a href="#" style="color: #6c757d;">Activity History</a>
         </div>
-        <!-- My Profile -->
+        <!-- My Profile module1 -->
         <div class="nav-item">
             <i class="material-icons">person</i>
             <a href="{{ route('user.profile') }}">My Profile</a>

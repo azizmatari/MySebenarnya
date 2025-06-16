@@ -232,22 +232,16 @@
         <div class="nav-divider">INQUIRY MANAGEMENT</div>
         
         <!-- New Inquiries for Review -->
-        <div class="nav-item">
-            <i class="material-icons">new_releases</i>
-            <a href="{{ route('mcmc.inquiries') }}">New Inquiries</a>
-        </div>
+       
 
         <!-- inquriy report for Review -->
-        <div class="nav-item">
-            <i class="material-icons">assessment</i>
-            <a href="{{ route('reports.index') }}">Inquiry Report</a>
-        </div>
+        
         
 <!-- option 4 -->
     <div class="nav-item"><i class="material-icons">person_add</i><a href="{{ route('register.agency.view') }}">Register Agency</a></div>
   </div>
 
-        <!-- My Profile removed as requested -->
+       
 
        <div class="nav-item"><i class="material-icons">bar_chart</i><a href="{{ route('mcmc.reports') }}">Reports</a></div>
 
@@ -260,8 +254,7 @@
         
         <!-- Create Test Data -->
         <div class="nav-item">
-            <i class="material-icons">science</i>
-            <a href="{{ route('mcmc.create.test.data') }}">Create Test Data</a>
+         
         </div>
     </div>
 </div>
