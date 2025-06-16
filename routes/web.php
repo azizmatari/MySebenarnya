@@ -1,6 +1,5 @@
 <?php
 
-
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SharedControllers\DashboardController;
 use App\Http\Controllers\module1\UserProfileController;
@@ -10,10 +9,13 @@ use App\Http\Controllers\module3\assignController;
 use App\Http\Controllers\module2\InquiryController;
 use App\Http\Controllers\module2\MCMCController;
 use App\Http\Controllers\module1\RegisterAgencyController;
+use App\Http\Controllers\module1\UserReportController;;
 
 // ==================
 // Dashboard Routes
 // ==================
+Route::get('/mcmc/reports', [UserReportController::class, 'dashboardReports'])
+    ->name('mcmc.reports');
 Route::get('/dashboard/mcmc', [DashboardController::class, 'mcmcDashboard'])->name('mcmc.dashboard');
 Route::get('/dashboard/public', [DashboardController::class, 'userDashboard'])->name('public.dashboard');
 Route::get('/dashboard/agency', [DashboardController::class, 'agencyDashboard'])->name('agency.dashboard');
@@ -25,12 +27,8 @@ Route::get('/dashboard/agency', [DashboardController::class, 'agencyDashboard'])
 // ==================
 // User Profile Routes (Public User & Agency)
 // ==================
-
-// Public User Profile
 Route::get('/user/profile', [UserProfileController::class, 'edit'])->name('user.profile');
 Route::post('/user/profile', [UserProfileController::class, 'update'])->name('user.profile.update');
-
-// Agency Profile
 Route::get('/agency/profile', [UserProfileController::class, 'edit'])->name('agency.profile');
 Route::post('/agency/profile', [UserProfileController::class, 'update'])->name('agency.profile.update');
 
@@ -40,63 +38,25 @@ Route::post('/agency/profile', [UserProfileController::class, 'update'])->name('
 Route::post('/logout', [UserAuthController::class, 'logout'])->name('logout');
 
 // ==================
-// Default Welcome Page
+// Registration & Login
 // ==================
-Route::get('/', function () {
-    // TEMPORARY: Bypass login for testing - UNCOMMENT BELOW WHEN READY
-    /*
-    if (session()->has('user_id')) {
-        // Check user role and redirect accordingly
-        if (session('role') === 'public') {
-            return redirect()->route('module3.status');
-        }
-        return redirect()->route('user.dashboard');
-    }
-    return redirect()->route('login');
-    */
-
-    // TEMPORARY: Direct redirect to inquiry status page for testing
-    return redirect()->route('module3.status');
-});
-
-// ==================
-// Login & Register Routes (TEMPORARILY DISABLED)
-// ==================
-
-// TEMPORARY: Login page shows message instead of actual login
-Route::get('/login', function () {
-    return response()->view('temp_message', [
-        'title' => 'Login Temporarily Disabled',
-        'message' => 'Login functionality is temporarily disabled for testing. You will be redirected to the inquiry status page.',
-        'redirect_url' => route('module3.status'),
-        'redirect_text' => 'Go to Inquiry Status Page'
-    ]);
-})->name('login');
-
-
-
 Route::get('/register', function () {
     return view('module1.UserRegisterView');
 })->name('register.view');
 Route::post('/register', [UserAuthController::class, 'registerPublic'])->name('register.submit');
-
-// Show the Register Agency form
 Route::get('/register-agency', [RegisterAgencyController::class, 'showRegisterForm'])->name('register.agency.view');
-// Handle the Register Agency POST
 Route::post('/register-agency', [RegisterAgencyController::class, 'register'])->name('register.agency.submit');
+// Commented out - routes for dynamic agency types (for future use)
+// Route::post('/register-agency/add-type', [RegisterAgencyController::class, 'addAgencyType'])->name('add.agency.type');
+// Route::post('/register-agency/reset-types', [RegisterAgencyController::class, 'resetAgencyTypes'])->name('reset.agency.types');
 
 // Login (All Users)
 Route::get('/login', function () {
     return view('module1.UserLoginView');
 })->name('login');
 Route::post('/login', [UserAuthController::class, 'login'])->name('login.submit');
-
-// Logout (All Users)
 Route::post('/logout', [UserAuthController::class, 'logout'])->name('logout');
 
-// ==================
-// Forgot Password View
-// ==================
 Route::get('/forgot-password', function () {
     return view('module1.ForgotPasswordView');
 })->name('forgot.password');
@@ -108,6 +68,15 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// =====================================
+// Module 1 Reports (User List + Charts)
+// =====================================
+// Module 1 Reports (User List + Charts)
+Route::get('/user-reports', [UserReportController::class, 'index'])->name('user.reports.index');
+Route::get('/user-reports/charts', [UserReportController::class, 'charts'])->name('user.reports.charts');
+Route::get('/user-reports/export-excel/{mode}', [UserReportController::class, 'exportExcel'])->name('user.reports.export.excel');
+Route::post('/user-reports/agency/{id}/update-type', [UserReportController::class, 'updateAgencyType'])->name('user.reports.agency.update.type');
+Route::post('/user-reports/agency/{id}/delete', [UserReportController::class, 'deleteAgency'])->name('user.reports.agency.delete');
 
 
 
@@ -118,7 +87,9 @@ Route::get('/', function () {
 //END Of module 1 routes
 //END Of module 1 routes
 
-
+// ==================
+// Module 2 - Routes
+// ==================
 
 
 // ==================
@@ -218,3 +189,9 @@ Route::get('/reports/agency-performance', [App\Http\Controllers\module3\ReportCo
 // Export routes
 Route::post('/reports/export-pdf', [App\Http\Controllers\module3\ReportController::class, 'exportToPDF'])->name('reports.export.pdf');
 Route::post('/reports/export-excel', [App\Http\Controllers\module3\ReportController::class, 'exportToExcel'])->name('reports.export.excel');
+
+// Temporary route to check database schema
+Route::get('/check-schema', function () {
+    $schema = DB::select('SHOW COLUMNS FROM agency');
+    return response()->json($schema);
+});

@@ -109,14 +109,15 @@
         left: 250px;
         right: 0;
         height: 70px;
-        background-color: #fff;
+        background: linear-gradient(135deg, #4478e3, #2451b7);
         display: flex;
         align-items: center;
         justify-content: flex-end;
         padding: 0 30px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         z-index: 999;
-        border-bottom: 1px solid #ebedf2;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        color: white;
     }
 
     .profile-dropdown {
@@ -129,12 +130,21 @@
         margin-right: 15px;
         font-weight: 600;
         font-size: 12px;
-        color: #6c757d;
-        background-color: #f8f9fa;
+        color: #ffffff;
+        background-color: rgba(255, 255, 255, 0.2);
         padding: 6px 12px;
         border-radius: 20px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+        70% { box-shadow: 0 0 0 6px rgba(255, 255, 255, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
     }
 
     .profile-btn {
@@ -237,13 +247,16 @@
     <div class="nav-item"><i class="material-icons">person_add</i><a href="{{ route('register.agency.view') }}">Register Agency</a></div>
   </div>
 
-        <!-- My Profile -->
-        <div class="nav-item">
-            <i class="material-icons">person</i>
-            <a href="{{ route('user.profile') }}">My Profile</a>
-        </div>
+        <!-- My Profile removed as requested -->
+
+       <div class="nav-item"><i class="material-icons">bar_chart</i><a href="{{ route('mcmc.reports') }}">Reports</a></div>
+
+
         
         <div class="nav-divider">TESTING</div>
+
+        
+
         
         <!-- Create Test Data -->
         <div class="nav-item">

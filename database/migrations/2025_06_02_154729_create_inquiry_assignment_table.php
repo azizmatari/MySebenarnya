@@ -16,6 +16,7 @@ return new class extends Migration
             $table->boolean('isRejected');
             $table->unsignedBigInteger('mcmcId')->nullable();
             $table->date('assignDate');
+            $table->text('reassignComment')->nullable();
 
 
             // Add indexes for better performance

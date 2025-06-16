@@ -20,15 +20,15 @@ class UserAuthController extends Controller
             'userPassword' => 'required|string|min:6|confirmed',
         ]);
 
-      
-$user = PublicUser::create([
-    'userName' => $request->userName,
-    'userEmail' => $request->userEmail,
-    'userPassword' => Hash::make($request->userPassword),
-    'userContact_number' => null,
-    'profile_picture' => null,
-]);
-        
+
+        $user = PublicUser::create([
+            'userName' => $request->userName,
+            'userEmail' => $request->userEmail,
+            'userPassword' => Hash::make($request->userPassword),
+            'userContact_number' => null,
+            'profile_picture' => null,
+        ]);
+
 
         session([
             'user_id' => $user->userId,
@@ -101,6 +101,12 @@ $user = PublicUser::create([
                     'profile_picture' => $user->profile_picture,
                     'role' => 'agency'
                 ]);
+
+                // Check if this is the first login and redirect to profile page if it is
+                if ($user->first_login) {
+                    return redirect()->route('agency.profile')->with('first_login', true);
+                }
+
                 return redirect()->route('agency.dashboard');
             }
         }

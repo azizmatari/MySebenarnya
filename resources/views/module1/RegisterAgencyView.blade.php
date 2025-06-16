@@ -103,10 +103,17 @@ form button[type="submit"]:hover {
             <div>
                 <label>Password</label>
                 <input type="password" name="agencyPassword" required>
-            </div>
-            <div>
+            </div>            <div>
                 <label>Confirm Password</label>
                 <input type="password" name="agencyPassword_confirmation" required>
+            </div>            <div>
+                <label>Agency Type</label>
+                <select name="agencyType" required style="width: 100%; padding: 7px 10px; margin-bottom: 10px; border: 1px solid #d1d9e6; border-radius: 6px; font-size: 0.97rem; background: #f9fafb; transition: border 0.2s;">
+                    <option value="" disabled selected>-- Select Agency Type --</option>
+                    @foreach($agencyTypes as $type)
+                        <option value="{{ $type }}" {{ old('agencyType') == $type ? 'selected' : '' }}>{{ $type }}</option>
+                    @endforeach
+                </select>
             </div>
         
             <button type="submit">Register Agency</button>
@@ -119,6 +126,22 @@ form button[type="submit"]:hover {
                     @endforeach
                 </ul>
             </div>
-        @endif
+        @endif    </div>    
+    {{-- 
+    COMMENTED OUT - Agency Type Manager Section
+    For future use with dynamic agency types
+    
+    HTML REMOVED - When re-enabling dynamic agency types, restore this section with proper route definitions:
+    - A form to add new agency types (action to "add.agency.type" route)
+    - Display of current agency types
+    - Reset types button (action to "reset.agency.types" route)
+    
+    The form and buttons would look like:
+    <div class="container" style="max-width: 500px; margin: 40px auto;">
+        <h2>Manage Agency Types</h2>
+        <!-- Add type form -->
+        <!-- Current types display -->
+        <!-- Reset types button -->
     </div>
+    --}}
 </div>

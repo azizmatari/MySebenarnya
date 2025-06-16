@@ -22,7 +22,8 @@ class UserProfileController extends Controller
             return view('module1.UserProfileView', compact('user'));
         } elseif ($role === 'agency') {
             $agency = Agency::findOrFail($userId);
-            return view('module1.AgencyProfileView', compact('agency'));
+            $firstLogin = session('first_login', false);
+            return view('module1.AgencyProfileView', compact('agency', 'firstLogin'));
         } else {
             abort(403, 'Unauthorized');
         }
@@ -71,7 +72,6 @@ class UserProfileController extends Controller
             session(['username' => $user->userName]);
             session(['profile_picture' => $user->profile_picture]);
             return back()->with('success', 'Profile updated successfully.');
-
         } elseif ($role === 'agency') {
             $agency = Agency::findOrFail($userId);
 
@@ -93,12 +93,15 @@ class UserProfileController extends Controller
                 }
                 $path = $request->file('profile_picture')->store('profile_pictures', 'public');
                 $agency->profile_picture = $path;
-            }
-
-            // Handle password change
+            }            // Handle password change
             if ($request->filled('current_password') && $request->filled('new_password')) {
                 if (Hash::check($request->current_password, $agency->agencyPassword)) {
                     $agency->agencyPassword = Hash::make($request->new_password);
+
+                    // If this was a first login, set first_login to false now
+                    if ($agency->first_login) {
+                        $agency->first_login = false;
+                    }
                 } else {
                     return back()->withErrors(['current_password' => 'Current password is incorrect.']);
                 }

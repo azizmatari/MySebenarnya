@@ -15,7 +15,9 @@ return new class extends Migration
             $table->unsignedBigInteger('mcmcId')->nullable(); // FIXED: must match mcmc table type
             $table->string('agencyUsername', 20)->nullable();
             $table->string('profile_picture')->nullable();
-            $table->enum('agencyType', ['Education', 'Police', 'Sports', 'Health']);
+            $table->string('agencyContact')->nullable(); // Contact information (phone, email, etc.)
+            $table->boolean('first_login')->default(true); // Track if this is first login
+            $table->enum('agencyType', ['Education', 'Police', 'Sports', 'Health']); // Using enum for fixed agency types
             $table->foreign('mcmcId')->references('mcmcId')->on('mcmc');
         });
     }
@@ -25,5 +27,3 @@ return new class extends Migration
         Schema::dropIfExists('agency');
     }
 };
-
-

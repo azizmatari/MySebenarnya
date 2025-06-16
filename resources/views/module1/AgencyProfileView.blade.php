@@ -54,9 +54,14 @@
         margin-top: 16px;
     }
 </style>
-<div class="main-content">
-    <div class="card" style="max-width: 500px; margin: 40px auto;">
+<div class="main-content">    <div class="card" style="max-width: 500px; margin: 40px auto;">
         <h2>Edit Agency Profile</h2>
+        
+        @if(session('first_login') || $agency->first_login)
+            <div style="padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107; margin-bottom: 20px; color: #856404;">
+                <strong>Welcome!</strong> This is your first login. Please change your temporary password to a new secure password before continuing.
+            </div>
+        @endif
         <form method="POST" action="{{ route('agency.profile.update') }}" enctype="multipart/form-data">
             @csrf
             @method('POST')
@@ -92,8 +97,7 @@
 
         @if(session('success'))
             <div class="success-message">{{ session('success') }}</div>
-        @endif
-        @if($errors->any())
+        @endif        @if($errors->any())
             <div class="error-message">
                 <ul>
                     @foreach($errors->all() as $error)
@@ -104,4 +108,38 @@
         @endif
     </div>
 </div>
+
+@if(session('first_login') || $agency->first_login)
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const currentPasswordField = document.getElementById('current_password');
+        const newPasswordField = document.getElementById('new_password');
+        const confirmPasswordField = document.getElementById('new_password_confirmation');
+        
+        // Make password fields required on first login
+        currentPasswordField.required = true;
+        newPasswordField.required = true;
+        confirmPasswordField.required = true;
+        
+        // Add validation to ensure password is changed on first login
+        form.addEventListener('submit', function(e) {
+            if (!currentPasswordField.value || !newPasswordField.value || !confirmPasswordField.value) {
+                e.preventDefault();
+                alert('You must change your password on first login. Please complete all password fields.');
+            }
+            
+            if (newPasswordField.value !== confirmPasswordField.value) {
+                e.preventDefault();
+                alert('New password and confirmation do not match.');
+            }
+            
+            if (newPasswordField.value.length < 6) {
+                e.preventDefault();
+                alert('New password must be at least 6 characters long.');
+            }
+        });
+    });
+</script>
+@endif
 

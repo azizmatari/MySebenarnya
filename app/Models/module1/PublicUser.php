@@ -61,4 +61,31 @@ class PublicUser extends Model
     {
         return $this->profile_picture ? asset('storage/' . $this->profile_picture) : null;
     }
+
+    /**
+     * Get user statistics including counts and percentages
+     * 
+     * @return array Contains counts and percentage breakdown of all user types
+     */
+    public static function getUserStats()
+    {
+        $publicCount = self::count();
+        $agencyCount = Agency::count();
+        $staffCount = MCMC::count();
+        $total = $publicCount + $agencyCount + $staffCount;
+
+        return [
+            'counts' => [
+                'publicCount' => $publicCount,
+                'agencyCount' => $agencyCount,
+                'staffCount' => $staffCount,
+                'total' => $total
+            ],
+            'percentages' => [
+                'publicPercent' => $total > 0 ? round(($publicCount / $total * 100) * 10) / 10 : 0,
+                'agencyPercent' => $total > 0 ? round(($agencyCount / $total * 100) * 10) / 10 : 0,
+                'staffPercent' => $total > 0 ? round(($staffCount / $total * 100) * 10) / 10 : 0
+            ]
+        ];
+    }
 }
