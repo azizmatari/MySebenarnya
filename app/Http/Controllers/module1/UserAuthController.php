@@ -67,10 +67,9 @@ class UserAuthController extends Controller
                 'userUsername' => 'required|string',
                 'password' => 'required|string'
             ]);
-            $user = MCMC::where('mcmcUsername', $request->userUsername)->first();
-
-            // Debug logging for MCMC staff login
-            \Log::info('--- MCMC Staff Login Attempt ---');            Log::info('Username entered: ' . $request->userUsername);
+            $user = MCMC::where('mcmcUsername', $request->userUsername)->first();            // Debug logging for MCMC staff login
+            Log::info('--- MCMC Staff Login Attempt ---');
+            Log::info('Username entered: ' . $request->userUsername);
             Log::info('Password entered: ' . $request->password);
             Log::info('User found: ' . ($user ? 'YES' : 'NO'));
             Log::info('Password in DB: ' . ($user ? $user->mcmcPassword : 'NO USER'));
@@ -82,45 +81,39 @@ class UserAuthController extends Controller
                     'profile_picture' => $user->profile_picture,
                     'role' => 'mcmc'
                 ]);
-                \Log::info('MCMC login success!');
+                Log::info('MCMC login success!');
                 return redirect()->route('mcmc.dashboard');
             } else {
-                \Log::info('MCMC login failed: Invalid credentials or password mismatch.');
-            }
-        } else if ($request->role === 'agency') {
+                Log::info('MCMC login failed: Invalid credentials or password mismatch.');
+            }        } else if ($request->role === 'agency') {
             // For Agency: find by username
             $request->validate([
                 'userUsername' => 'required|string',
                 'password' => 'required|string'
-            ]);            $user = Agency::where('agencyUsername', $request->userUsername)->first();
+            ]);
             
-            // Add debug logging
-            \Log::info('--- Agency Login Attempt ---');
-            \Log::info('Username entered: ' . $request->userUsername);
-            \Log::info('User found: ' . ($user ? 'YES' : 'NO'));
-            if ($user) {
-                \Log::info('First login flag: ' . ($user->first_login ? 'YES' : 'NO'));
-            }
-              if ($user && Hash::check($request->password, $user->agencyPassword)) {
+            $user = Agency::where('agencyUsername', $request->userUsername)->first();
+            
+            // Simple debug logging
+            Log::info('--- Agency Login Attempt ---');
+            Log::info('Username: ' . $request->userUsername);
+            
+            // Check if user exists and password is correct
+            if ($user && Hash::check($request->password, $user->agencyPassword)) {
+                // Password is correct, set up the session
                 session([
                     'user_id' => $user->agencyId,
                     'username' => $user->agency_name,
                     'profile_picture' => $user->profile_picture,
                     'role' => 'agency'
-                ]);
+                ]);                
+                Log::info('Agency login successful - ID: ' . $user->agencyId);
                 
-                // Add debug logging for login logic
-                Log::info('Agency authenticated successfully');
-                Log::info('First login value: ' . ($user->first_login ? 'true' : 'false'));
-                
-                // More direct check for first_login flag without property_exists
-                if ($user->first_login) {
-                    Log::info('Agency first login - redirecting to profile page');
-                    return redirect()->route('agency.profile')->with('first_login', true);
-                } else {
-                    Log::info('Agency regular login - redirecting to dashboard');
-                    return redirect()->route('agency.dashboard');
-                }
+                // Always redirect to dashboard regardless of first_login status
+                Log::info('Redirecting agency to dashboard');
+                return redirect()->route('agency.dashboard');
+            } else {
+                Log::info('Agency login failed: ' . ($user ? 'Invalid password' : 'User not found'));
             }
         }
 

@@ -14,30 +14,36 @@ use App\Http\Controllers\SharedControllers\ReassignmentController;
 
 
 // ==================
-// Dashboard Routes
+// Protected Routes (require login)
 // ==================
-Route::get('/mcmc/reports', [UserReportController::class, 'dashboardReports'])
-    ->name('mcmc.reports');
-Route::get('/dashboard/mcmc', [DashboardController::class, 'mcmcDashboard'])->name('mcmc.dashboard');
-Route::get('/dashboard/public', [DashboardController::class, 'userDashboard'])->name('public.dashboard');
-Route::get('/dashboard/agency', [DashboardController::class, 'agencyDashboard'])->name('agency.dashboard');
 
-/*====================
-    module 1 - routes
-=====================*/
+Route::middleware(['session.auth'])->group(function () {
+    // Dashboard Routes
+    Route::get('/mcmc/reports', [UserReportController::class, 'dashboardReports'])
+        ->name('mcmc.reports');
+    Route::get('/dashboard/mcmc', [DashboardController::class, 'mcmcDashboard'])
+        ->name('mcmc.dashboard');
+    Route::get('/dashboard/public', [DashboardController::class, 'userDashboard'])
+        ->name('public.dashboard');
+    Route::get('/dashboard/agency', [DashboardController::class, 'agencyDashboard'])
+        ->name('agency.dashboard');
 
-// ==================
-// User Profile Routes (Public User & Agency)
-// ==================
-Route::get('/user/profile', [UserProfileController::class, 'edit'])->name('user.profile');
-Route::post('/user/profile', [UserProfileController::class, 'update'])->name('user.profile.update');
-Route::get('/agency/profile', [UserProfileController::class, 'edit'])->name('agency.profile');
-Route::post('/agency/profile', [UserProfileController::class, 'update'])->name('agency.profile.update');
-
-// ==================
-// Logout
-// ==================
-Route::post('/logout', [UserAuthController::class, 'logout'])->name('logout');
+    // User Profile Routes
+    Route::get('/user/profile', [UserProfileController::class, 'edit'])
+        ->name('user.profile');
+    Route::post('/user/profile', [UserProfileController::class, 'update'])
+        ->name('user.profile.update');
+    
+    // Agency Profile Routes 
+    Route::get('/agency/profile', [UserProfileController::class, 'edit'])
+        ->name('agency.profile');
+    Route::post('/agency/profile', [UserProfileController::class, 'update'])
+        ->name('agency.profile.update');
+    
+    // Logout Route
+    Route::post('/logout', [UserAuthController::class, 'logout'])
+        ->name('logout');
+});
 
 // ==================
 // Registration & Login
@@ -124,39 +130,39 @@ Route::get('/inquiry/{inquiryId}/history/full', [DashboardController::class, 'ge
 Route::get('/download/supporting-document/{filename}', [DashboardController::class, 'downloadSupportingDocument'])->name('download.supporting.document');
 
 // Debug route to check file locations
-Route::get('/debug/check-files', function() {
+Route::get('/debug/check-files', function () {
     $files = [];
-    
+
     // Check storage directory
     $storageDir = storage_path('app/public/supporting_documents');
     if (is_dir($storageDir)) {
         $files['storage_files'] = array_diff(scandir($storageDir), ['.', '..']);
     }
-    
+
     // Check public directory
     $publicDir = public_path('storage/supporting_documents');
     if (is_dir($publicDir)) {
         $files['public_files'] = array_diff(scandir($publicDir), ['.', '..']);
     }
-    
+
     // Check database records
     $files['database_records'] = \App\Models\SharedModels\InquiryStatusHistory::whereNotNull('supporting_document')
         ->pluck('supporting_document')
         ->toArray();
-    
+
     return response()->json($files);
 });
 
 // Test route to verify file upload
-Route::post('/debug/test-upload', function(\Illuminate\Http\Request $request) {
+Route::post('/debug/test-upload', function (\Illuminate\Http\Request $request) {
     if ($request->hasFile('test_file')) {
         $file = $request->file('test_file');
         $filename = 'test_' . time() . '_' . $file->getClientOriginalName();
-        
+
         // Store file
         $path = $file->storeAs('supporting_documents', $filename, 'public');
         $fullPath = storage_path('app/public/' . $path);
-        
+
         return response()->json([
             'success' => true,
             'filename' => $filename,
@@ -167,7 +173,7 @@ Route::post('/debug/test-upload', function(\Illuminate\Http\Request $request) {
             'original_size' => $file->getSize()
         ]);
     }
-    
+
     return response()->json(['error' => 'No file uploaded']);
 });
 
@@ -214,40 +220,39 @@ Route::get('/agency/dashboard/stats', [DashboardController::class, 'getAgencySta
 Route::get('/dashboard/inquiry/{inquiryId}/status', [DashboardController::class, 'getInquiryStatus'])->name('dashboard.inquiry.status');
 
 // ==================
-// Agency Reassignment Routes
+// Agency Reassignment Routes (Protected)
 // ==================
 
-// Agency reassignment requests management
-Route::get('/agency/reassignment-requests', [ReassignmentController::class, 'index'])->name('agency.reassignment.requests');
-Route::get('/agency/reassignment-requests/{id}', [ReassignmentController::class, 'show'])->name('agency.reassignment.show');
-
-// MCMC reassignment management (for MCMC staff)
-Route::get('/mcmc/reassignment-requests', [ReassignmentController::class, 'mcmcIndex'])->name('mcmc.reassignment.index');
-Route::post('/mcmc/reassignment-requests/{id}/approve', [ReassignmentController::class, 'approve'])->name('mcmc.reassignment.approve');
-Route::post('/mcmc/reassignment-requests/{id}/reject', [ReassignmentController::class, 'reject'])->name('mcmc.reassignment.reject');
-
-
-// ==================
-// Agency Assignment Management Routes
-// ==================
-Route::get('/agency/assignment/management', [ReassignmentController::class, 'index'])->name('agency.assignment.management');
-Route::post('/agency/assignment/{assignmentId}/accept', [ReassignmentController::class, 'accept'])->name('agency.assignment.accept');
-Route::post('/agency/assignment/{assignmentId}/reassignment', [ReassignmentController::class, 'requestReassignment'])->name('agency.assignment.reassignment');
+Route::middleware(['session.auth'])->group(function () {
+    // Agency reassignment requests management
+    Route::get('/agency/reassignment-requests', [ReassignmentController::class, 'index'])->name('agency.reassignment.requests');
+    Route::get('/agency/reassignment-requests/{id}', [ReassignmentController::class, 'show'])->name('agency.reassignment.show');
+    
+    // MCMC reassignment management (for MCMC staff)
+    Route::get('/mcmc/reassignment-requests', [ReassignmentController::class, 'mcmcIndex'])->name('mcmc.reassignment.index');
+    Route::post('/mcmc/reassignment-requests/{id}/approve', [ReassignmentController::class, 'approve'])->name('mcmc.reassignment.approve');
+    Route::post('/mcmc/reassignment-requests/{id}/reject', [ReassignmentController::class, 'reject'])->name('mcmc.reassignment.reject');
+    
+    // Agency Assignment Management Routes
+    Route::get('/agency/assignment/management', [ReassignmentController::class, 'index'])->name('agency.assignment.management');
+    Route::post('/agency/assignment/{assignmentId}/accept', [ReassignmentController::class, 'accept'])->name('agency.assignment.accept');
+    Route::post('/agency/assignment/{assignmentId}/reassignment', [ReassignmentController::class, 'requestReassignment'])->name('agency.assignment.reassignment');
+});
 
 
 // ==================
 // Debug Routes (REMOVE IN PRODUCTION)
 // ==================
-Route::get('/debug/session', function() {
+Route::get('/debug/session', function () {
     return [
         'session_data' => session()->all(),
-        'agency_id' => session('agency_id'),
+        'user_id' => session('user_id'),
         'user_id' => session('user_id'),
         'role' => session('role')
     ];
 });
 
-Route::get('/debug/set-agency-session', function() {
+Route::get('/debug/set-agency-session', function () {
     // Set a test agency session for debugging
     session([
         'agency_id' => 1,
@@ -258,11 +263,11 @@ Route::get('/debug/set-agency-session', function() {
     return redirect('/debug/session');
 });
 
-Route::get('/debug/agencies', function() {
+Route::get('/debug/agencies', function () {
     return \App\Models\module1\Agency::all(['agencyId', 'agency_name', 'agencyUsername']);
 });
 
-Route::get('/debug/create-test-agency', function() {
+Route::get('/debug/create-test-agency', function () {
     $agency = \App\Models\module1\Agency::create([
         'agency_name' => 'Test Agency',
         'agencyUsername' => 'testagency',
@@ -270,7 +275,7 @@ Route::get('/debug/create-test-agency', function() {
         'mcmcId' => 1,
         'agencyType' => 'Police'
     ]);
-    
+
     return [
         'message' => 'Test agency created successfully',
         'agency' => $agency,
@@ -282,10 +287,10 @@ Route::get('/debug/create-test-agency', function() {
     ];
 });
 
-Route::get('/debug/test-login', function() {
+Route::get('/debug/test-login', function () {
     // Simulate agency login
     $agency = \App\Models\module1\Agency::where('agencyUsername', 'testagency')->first();
-    
+
     if ($agency && \Illuminate\Support\Facades\Hash::check('password', $agency->agencyPassword)) {
         session([
             'agency_id' => $agency->agencyId,
@@ -293,18 +298,18 @@ Route::get('/debug/test-login', function() {
             'username' => $agency->agency_name,
             'role' => 'agency'
         ]);
-        
+
         return [
             'message' => 'Login simulation successful',
             'session_data' => session()->all(),
             'redirect_url' => route('agency.dashboard')
         ];
     }
-    
+
     return ['error' => 'Login failed'];
 });
 
-Route::get('/debug/test-status-update', function() {
+Route::get('/debug/test-status-update', function () {
     return view('test-status-update');
 });
 

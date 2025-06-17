@@ -59,7 +59,7 @@
         
         @if(session('first_login') || $agency->first_login)
             <div style="padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107; margin-bottom: 20px; color: #856404;">
-                <strong>Welcome!</strong> This is your first login. Please change your temporary password to a new secure password before continuing.
+                <strong>Welcome!</strong> This is your first login. You must change your temporary password to continue. After changing your password, you'll be redirected to your dashboard.
             </div>
         @endif
         <form method="POST" action="{{ route('agency.profile.update') }}" enctype="multipart/form-data">

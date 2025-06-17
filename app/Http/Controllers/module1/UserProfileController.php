@@ -21,9 +21,10 @@ class UserProfileController extends Controller
         if ($role === 'public') {
             $user = PublicUser::findOrFail($userId);
             return view('module1.UserProfileView', compact('user'));
-        } elseif ($role === 'agency') {
+        } else        if ($role === 'agency') {
             $agency = Agency::findOrFail($userId);
-            $firstLogin = session('first_login', false);
+            $firstLogin = session('first_login', $agency->first_login);
+            Log::info('Agency profile accessed. First login: ' . ($firstLogin ? 'YES' : 'NO'));
             return view('module1.AgencyProfileView', compact('agency', 'firstLogin'));
         } else {
             abort(403, 'Unauthorized');
@@ -95,42 +96,46 @@ class UserProfileController extends Controller
                 $path = $request->file('profile_picture')->store('profile_pictures', 'public');
                 $agency->profile_picture = $path;
             }            // Handle password change
-            if ($request->filled('current_password') && $request->filled('new_password')) {                Log::info('Password change requested for agency ID: ' . $agency->agencyId);
+            if ($request->filled('current_password') && $request->filled('new_password')) {
+                Log::info('Password change requested for agency ID: ' . $agency->agencyId);
                 Log::info('First login status before: ' . ($agency->first_login ? 'YES' : 'NO'));
-                
-                if (Hash::check($request->current_password, $agency->agencyPassword)) {
-                    $agency->agencyPassword = Hash::make($request->new_password);
 
-                    // If this was a first login, set first_login to false now
-                    if ($agency->first_login) {
-                        Log::info('Changing first_login flag to false');
-                        $agency->first_login = false;
-                    }
-                } else {
+                // Verify current password
+                if (!Hash::check($request->current_password, $agency->agencyPassword)) {
                     Log::info('Password change failed: current password incorrect');
                     return back()->withErrors(['current_password' => 'Current password is incorrect.']);
                 }
+                
+                // Set new password
+                $agency->agencyPassword = Hash::make($request->new_password);
+                
+                // Check if this is first login
+                $wasFirstLogin = $agency->first_login;
+                
+                // After password change on first login, set flag to false
+                if ($wasFirstLogin) {
+                    Log::info('Setting first_login flag to false after password change');
+                    $agency->first_login = false;
+                }
             }
-            
-            // Check if first_login flag was changed in this request
-            $wasFirstLogin = $agency->isDirty('first_login');
-            Log::info('Was first login flag changed? ' . ($wasFirstLogin ? 'YES' : 'NO'));
-            
+
+            // Save changes
             $agency->save();
-            Log::info('Agency saved. First login status after save: ' . ($agency->first_login ? 'YES' : 'NO'));
-            
-            // Update session with new name and profile picture
+            Log::info('Agency profile updated. First login status: ' . ($agency->first_login ? 'YES' : 'NO'));
+
+            // Update session data
             session(['username' => $agency->agency_name]);
             session(['profile_picture' => $agency->profile_picture]);
-            
+
             // If this was the first login and password was changed, redirect to dashboard
-            if ($wasFirstLogin) {
-                Log::info('Redirecting to dashboard after first login password change');
-                return redirect()->route('agency.dashboard')->with('success', 'Password changed successfully. Welcome to your dashboard!');
+            if (isset($wasFirstLogin) && $wasFirstLogin) {
+                Log::info('First login completed - redirecting to dashboard');
+                return redirect()->route('agency.dashboard')
+                    ->with('success', 'Password changed successfully. Welcome to your dashboard!');
             }
-            
-            // Otherwise return to the profile page
-            Log::info('Returning to profile page (regular update)');
+
+            // For regular updates, return to the profile page
+            Log::info('Regular profile update - staying on profile page');
             return back()->with('success', 'Profile updated successfully.');
         } else {
             abort(403, 'Unauthorized');

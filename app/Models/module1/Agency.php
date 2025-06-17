@@ -114,7 +114,7 @@ class Agency extends Model
         return file_put_contents($typesFile, json_encode($allTypes)) !== false;
     }
     */
-    
+
     /**
      * Get all inquiry assignments associated with this agency
      */
@@ -122,7 +122,7 @@ class Agency extends Model
     {
         return $this->hasMany(InquiryAssignment::class, 'agencyId', 'agencyId');
     }
-    
+
     /**
      * Get all status history updates made by this agency
      */

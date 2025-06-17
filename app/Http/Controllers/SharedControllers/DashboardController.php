@@ -291,9 +291,17 @@ class DashboardController extends Controller
 
     public function agencyDashboard() {
         // Get agency ID from session
-        $agencyId = Session::get('agency_id');
+        $agencyId = Session::get('user_id');
+        
+        // Log the session data for debugging
+        Log::info('Agency dashboard accessed. Session data: ', [
+            'user_id' => Session::get('user_id'),
+            'username' => Session::get('username'),
+            'role' => Session::get('role')
+        ]);
         
         if (!$agencyId) {
+            Log::info('No user_id in session, redirecting to login');
             return redirect()->route('login')->with('error', 'Please login to access dashboard');
         }
         
@@ -847,10 +855,10 @@ class DashboardController extends Controller
     {
         $filePath = storage_path('app/reports/' . $filename);
         
-        \Log::info('Download PDF request', ['filename' => $filename, 'path' => $filePath]);
+        Log::info('Download PDF request', ['filename' => $filename, 'path' => $filePath]);
         
         if (!file_exists($filePath)) {
-            \Log::error('PDF file not found', ['path' => $filePath]);
+            Log::error('PDF file not found', ['path' => $filePath]);
             abort(404, 'Report file not found');
         }
         
@@ -862,7 +870,7 @@ class DashboardController extends Controller
             $contentType = 'text/plain';
         }
         
-        \Log::info('Serving PDF download', [
+        Log::info('Serving PDF download', [
             'file' => $filename,
             'size' => filesize($filePath),
             'content_type' => $contentType
@@ -895,7 +903,7 @@ class DashboardController extends Controller
     public function getFilteredInquiries(Request $request)
     {
         try {
-            \Log::info('Filter request received', $request->all());
+            Log::info('Filter request received', $request->all());
             
             $status = $request->get('status');
             $agencyId = $request->get('agency_id');
@@ -915,7 +923,7 @@ class DashboardController extends Controller
             }
             
             $inquiries = $query->get();
-            \Log::info('Initial inquiries found', ['count' => $inquiries->count()]);
+            Log::info('Initial inquiries found', ['count' => $inquiries->count()]);
             
             // Add current assignment to each inquiry
             $inquiries->each(function($inquiry) {
@@ -935,7 +943,7 @@ class DashboardController extends Controller
                 $inquiries = $inquiries->filter(function($inquiry) use ($agencyId) {
                     return $inquiry->currentAssignment && $inquiry->currentAssignment->agencyId == $agencyId;
                 });
-                \Log::info('After agency filter', ['count' => $inquiries->count(), 'agency_id' => $agencyId]);
+                Log::info('After agency filter', ['count' => $inquiries->count(), 'agency_id' => $agencyId]);
             }
             
             // Format the response data
@@ -960,7 +968,7 @@ class DashboardController extends Controller
             ]);
             
         } catch (\Exception $e) {
-            \Log::error('Filter request failed', [
+            Log::error('Filter request failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

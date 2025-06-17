@@ -15,12 +15,18 @@ class ReassignmentController extends Controller
 {
     /**
      * Display the agency assignment management page
-     */
-    public function index()
+     */    public function index()
     {
-        $agencyId = Session::get('agency_id');
+        $agencyId = Session::get('user_id');
+        
+        Log::info('Reassignment index accessed. Session data:', [
+            'user_id' => Session::get('user_id'),
+            'username' => Session::get('username'),
+            'role' => Session::get('role')
+        ]);
         
         if (!$agencyId) {
+            Log::info('No user_id in session for reassignment controller, redirecting to login');
             return redirect()->route('login')->with('error', 'Please log in to access this page.');
         }
 
@@ -50,11 +56,11 @@ class ReassignmentController extends Controller
 
     /**
      * Accept an assignment
-     */    public function accept(Request $request, $assignmentId)
-    {
-        $agencyId = Session::get('agency_id');
+     */    public function accept(Request $request, $assignmentId)    {
+        $agencyId = Session::get('user_id');
         
         if (!$agencyId) {
+            Log::info('No user_id in session for accept assignment');
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
@@ -140,13 +146,12 @@ class ReassignmentController extends Controller
     {
         $request->validate([
             'reassignment_reason' => 'required|string|max:1000'
-        ]);
-
-        $agencyId = Session::get('agency_id');
+        ]);        $agencyId = Session::get('user_id');
         
         if (!$agencyId) {
+            Log::info('No user_id in session for requestReassignment');
             return response()->json(['error' => 'Unauthorized'], 401);
-        }        try {
+        }try {
             DB::beginTransaction();
             
             $assignment = InquiryAssignment::where('assignmentId', $assignmentId)
@@ -188,12 +193,17 @@ class ReassignmentController extends Controller
 
     /**
      * Show specific reassignment request details
-     */
-    public function show($assignmentId)
+     */    public function show($assignmentId)
     {
-        $agencyId = Session::get('agency_id');
+        $agencyId = Session::get('user_id');
+        
+        Log::info('Show reassignment request details', [
+            'assignment_id' => $assignmentId, 
+            'agency_id' => $agencyId
+        ]);
         
         if (!$agencyId) {
+            Log::info('No user_id in session for reassignment show');
             return redirect()->route('login')->with('error', 'Please log in to access this page.');
         }
 
