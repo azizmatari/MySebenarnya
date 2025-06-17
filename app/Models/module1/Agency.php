@@ -4,6 +4,9 @@ namespace App\Models\module1;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\SharedModels\InquiryAssignment;
+use App\Models\SharedModels\InquiryStatusHistory;
 
 class Agency extends Model
 {
@@ -94,8 +97,7 @@ class Agency extends Model
      * 
      * @param array $types
      * @return bool
-     */
-    /*
+     */    /*
     public static function saveAgencyTypes(array $types)
     {
         // Get existing custom types
@@ -112,4 +114,20 @@ class Agency extends Model
         return file_put_contents($typesFile, json_encode($allTypes)) !== false;
     }
     */
+    
+    /**
+     * Get all inquiry assignments associated with this agency
+     */
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(InquiryAssignment::class, 'agencyId', 'agencyId');
+    }
+    
+    /**
+     * Get all status history updates made by this agency
+     */
+    public function statusHistory(): HasMany
+    {
+        return $this->hasMany(InquiryStatusHistory::class, 'agencyId', 'agencyId');
+    }
 }

@@ -5,7 +5,17 @@
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-family: 'Segoe UI', Tahoma, Geneva,        <div class="nav-item active">
+            <i class="material-icons">dashboard</i>
+            <a href="{{ route('agency.dashboard') }}">Dashboard</a>
+        </div>
+
+        <div class="nav-item">
+            <i class="material-icons">assignment_turned_in</i>
+            <a href="{{ route('agency.assignment.management') }}">Assignment Management</a>
+        </div>
+
+        <div class="nav-divider">INFORMATION</div>na, sans-serif;
     }
 
     body {
@@ -100,6 +110,15 @@
         overflow-y: auto;
         margin-left: 250px;
         padding-top: 70px;
+        min-height: 100vh;
+    }
+    
+    /* Dashboard content styling */
+    .dashboard-content {
+        margin-left: 250px;
+        padding-top: 70px;
+        min-height: 100vh;
+        background-color: #f8f9fa;
     }
 
     /* Top bar styles */
@@ -216,22 +235,22 @@
     <div class="sidebar-nav">
         <div class="nav-item active">
             <i class="material-icons">dashboard</i>
-            <a href=#>Dashboard</a>
+            <a href="{{ route('agency.dashboard') }}">Dashboard</a>
         </div>
 
+        <div class="nav-divider">CASE MANAGEMENT</div>
         
+        <div class="nav-item">
+            <i class="material-icons">assignment_return</i>
+            <a href="{{ route('agency.reassignment.requests') }}">Reassignment Requests</a>
+        </div>
 
-        <div class="nav-divider">INQUIRY MANAGEMENT</div>
-        <!-- Submit New Inquiry -->
-        
-        <!-- My Inquiries -->
-        
-        <!-- Public Inquiries -->
-        
         <div class="nav-divider">INFORMATION</div>
-        <!-- Inquiry History (placeholder) -->
         
-         <!-- My Profile mod1-->
+        <div class="nav-item">
+            <i class="material-icons">help_outline</i>
+            <a href="#" onclick="showHelpModal()">Help & Guidelines</a>
+        </div>
         <div class="nav-item">
             <i class="material-icons">person</i>
             <a href="{{ route('user.profile') }}">My Profile</a>
@@ -254,7 +273,7 @@
       @endif
     </button>
     <div class="dropdown-content" id="profileDropdown">
-      <a href="{{ route('user.profile') }}"><i class="material-icons">person</i> My Profile</a>
+      <a href="#"><i class="material-icons">person</i> My Profile</a>
       <a href="{{ route('logout') }}"
          onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
          <i class="material-icons">exit_to_app</i> Logout
@@ -281,4 +300,58 @@
             }
         }
     };
+
+    // Handle navigation clicks and tab switching
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle sidebar navigation
+        document.querySelectorAll('.nav-item a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                // Remove active class from all nav items
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Add active class to clicked item
+                this.parentElement.classList.add('active');
+                
+                // Handle hash navigation for dashboard tabs
+                const href = this.getAttribute('href');
+                if (href.includes('#') && href !== '#') {
+                    e.preventDefault();
+                    const tabName = href.split('#')[1];
+                    if (typeof showTab === 'function') {
+                        showTab(tabName);
+                    }
+                    
+                    // Update URL without page reload
+                    history.pushState(null, '', href);
+                }
+            });
+        });
+        
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', function() {
+            const hash = window.location.hash.substring(1);
+            if (hash && typeof showTab === 'function') {
+                showTab(hash);
+            }
+        });
+        
+        // Set active tab based on URL hash on page load
+        const currentHash = window.location.hash.substring(1);
+        if (currentHash && typeof showTab === 'function') {
+            showTab(currentHash);
+        }
+    });
+
+    // Help modal function
+    function showHelpModal() {
+        alert('Agency Help & Guidelines:\n\n' +
+              '1. Review pending cases assigned by MCMC\n' +
+              '2. Update investigation status with detailed notes\n' +
+              '3. Provide reviewing officer name for accountability\n' +
+              '4. Use appropriate status: Under Investigation, Verified as True, Identified as Fake, or Rejected\n' +
+              '5. Add investigation notes with findings and conclusions\n\n' +
+              'For technical support, contact MCMC administrators.');
+    }
 </script>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\module1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use App\Models\module1\PublicUser;
 use App\Models\module1\MCMC;
 use App\Models\module1\Agency;
@@ -69,11 +70,10 @@ class UserAuthController extends Controller
             $user = MCMC::where('mcmcUsername', $request->userUsername)->first();
 
             // Debug logging for MCMC staff login
-            \Log::info('--- MCMC Staff Login Attempt ---');
-            \Log::info('Username entered: ' . $request->userUsername);
-            \Log::info('Password entered: ' . $request->password);
-            \Log::info('User found: ' . ($user ? 'YES' : 'NO'));
-            \Log::info('Password in DB: ' . ($user ? $user->mcmcPassword : 'NO USER'));
+            \Log::info('--- MCMC Staff Login Attempt ---');            Log::info('Username entered: ' . $request->userUsername);
+            Log::info('Password entered: ' . $request->password);
+            Log::info('User found: ' . ($user ? 'YES' : 'NO'));
+            Log::info('Password in DB: ' . ($user ? $user->mcmcPassword : 'NO USER'));
 
             if ($user && Hash::check($request->password, $user->mcmcPassword)) {
                 session([
@@ -92,22 +92,35 @@ class UserAuthController extends Controller
             $request->validate([
                 'userUsername' => 'required|string',
                 'password' => 'required|string'
-            ]);
-            $user = Agency::where('agencyUsername', $request->userUsername)->first();
-            if ($user && Hash::check($request->password, $user->agencyPassword)) {
+            ]);            $user = Agency::where('agencyUsername', $request->userUsername)->first();
+            
+            // Add debug logging
+            \Log::info('--- Agency Login Attempt ---');
+            \Log::info('Username entered: ' . $request->userUsername);
+            \Log::info('User found: ' . ($user ? 'YES' : 'NO'));
+            if ($user) {
+                \Log::info('First login flag: ' . ($user->first_login ? 'YES' : 'NO'));
+            }
+              if ($user && Hash::check($request->password, $user->agencyPassword)) {
                 session([
                     'user_id' => $user->agencyId,
                     'username' => $user->agency_name,
                     'profile_picture' => $user->profile_picture,
                     'role' => 'agency'
                 ]);
-
-                // Check if this is the first login and redirect to profile page if it is
+                
+                // Add debug logging for login logic
+                Log::info('Agency authenticated successfully');
+                Log::info('First login value: ' . ($user->first_login ? 'true' : 'false'));
+                
+                // More direct check for first_login flag without property_exists
                 if ($user->first_login) {
+                    Log::info('Agency first login - redirecting to profile page');
                     return redirect()->route('agency.profile')->with('first_login', true);
+                } else {
+                    Log::info('Agency regular login - redirecting to dashboard');
+                    return redirect()->route('agency.dashboard');
                 }
-
-                return redirect()->route('agency.dashboard');
             }
         }
 
